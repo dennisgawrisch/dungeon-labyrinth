@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -16,7 +13,7 @@ namespace Labyrinth {
             }
         }
 
-        private Triangle triangle;
+        private Vector3 camera;
 
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
@@ -29,8 +26,7 @@ namespace Labyrinth {
             GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
 
-            triangle = new Triangle();
-            triangle.Position = new Vector3(0, 0, 4);
+            camera = new Vector3(0.5f, 0.5f, 0.5f);
         }
 
         protected override void OnResize(EventArgs e) {
@@ -49,14 +45,14 @@ namespace Labyrinth {
             if (Keyboard[Key.Escape])
                 Exit();
 
-            if (Keyboard[Key.Up])
-                triangle.Position.Y += 0.1f;
-            if (Keyboard[Key.Down])
-                triangle.Position.Y -= 0.1f;
-            if (Keyboard[Key.Left])
-                triangle.Position.X += 0.1f;
-            if (Keyboard[Key.Right])
-                triangle.Position.X -= 0.1f;
+            if (Keyboard[Key.Up] || Keyboard[Key.W])
+                camera.Y += 0.1f;
+            if (Keyboard[Key.Down] || Keyboard[Key.S])
+                camera.Y -= 0.1f;
+            if (Keyboard[Key.A])
+                camera.X -= 0.1f;
+            if (Keyboard[Key.D])
+                camera.X += 0.1f;
         }
 
         protected override void OnRenderFrame(FrameEventArgs e) {
@@ -64,27 +60,70 @@ namespace Labyrinth {
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Matrix4 modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitZ, Vector3.UnitY);
+            Matrix4 modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref modelview);
+            GL.Translate(Vector3.Multiply(camera, -1f));
 
-            triangle.Render();
+            GL.Begin(BeginMode.Quads);
+            
+            GL.Color4(Color4.SaddleBrown);
 
-            SwapBuffers();
-        }
-    }
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(7, 0, 0);
+            GL.Vertex3(7, 0, 2);
+            GL.Vertex3(0, 0, 2);
 
-    class Triangle {
-        public Vector3 Position;
+            GL.Vertex3(0, 4, 0);
+            GL.Vertex3(7, 4, 0);
+            GL.Vertex3(7, 4, 2);
+            GL.Vertex3(0, 4, 2);
 
-        public void Render() {
-            GL.Begin(BeginMode.Triangles);
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(0, 4, 0);
+            GL.Vertex3(0, 4, 2);
+            GL.Vertex3(0, 0, 2);
 
-            GL.Color4(Color4.Red); GL.Vertex3(Position.X, Position.Y + 0.5, Position.Z);
-            GL.Color4(Color4.Green); GL.Vertex3(Position.X - 0.5, Position.Y - 0.5, Position.Z);
-            GL.Color4(Color4.Blue); GL.Vertex3(Position.X + 0.5, Position.Y - 0.5, Position.Z);
+            GL.Vertex3(7, 0, 0);
+            GL.Vertex3(7, 4, 0);
+            GL.Vertex3(7, 4, 2);
+            GL.Vertex3(7, 0, 2);
+
+            GL.Vertex3(1, 1, 0);
+            GL.Vertex3(4, 1, 0);
+            GL.Vertex3(4, 1, 2);
+            GL.Vertex3(1, 1, 2);
+
+            GL.Vertex3(1, 2, 0);
+            GL.Vertex3(4, 2, 0);
+            GL.Vertex3(4, 2, 2);
+            GL.Vertex3(1, 2, 2);
+
+            GL.Vertex3(1, 1, 0);
+            GL.Vertex3(1, 2, 0);
+            GL.Vertex3(1, 2, 2);
+            GL.Vertex3(1, 1, 2);
+
+            GL.Vertex3(4, 1, 0);
+            GL.Vertex3(4, 2, 0);
+            GL.Vertex3(4, 2, 2);
+            GL.Vertex3(4, 1, 2);
+
+            GL.Color4(Color4.AntiqueWhite);
+            
+            GL.Vertex3(0, 0, 0);
+            GL.Vertex3(7, 0, 0);
+            GL.Vertex3(7, 4, 0);
+            GL.Vertex3(0, 4, 0);
+
+            GL.Vertex3(0, 0, 2);
+            GL.Vertex3(7, 0, 2);
+            GL.Vertex3(7, 4, 2);
+            GL.Vertex3(0, 4, 2);
 
             GL.End();
+
+            SwapBuffers();
         }
     }
 }
