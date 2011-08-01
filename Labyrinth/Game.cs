@@ -13,7 +13,8 @@ namespace Labyrinth {
             }
         }
 
-        private Vector3 camera;
+        private Vector3 playerPosition;
+        private float playerAngle; // in degrees
 
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
@@ -26,7 +27,8 @@ namespace Labyrinth {
             GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
 
-            camera = new Vector3(0.5f, 0.5f, 0.5f);
+            playerPosition = new Vector3(0.5f, 0.5f, 0.5f);
+            playerAngle = 90;
         }
 
         protected override void OnResize(EventArgs e) {
@@ -34,7 +36,7 @@ namespace Labyrinth {
 
             GL.Viewport(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height);
 
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 1.0f, 64.0f);
+            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 0.00001f, 64.0f);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref projection);
         }
@@ -42,17 +44,34 @@ namespace Labyrinth {
         protected override void OnUpdateFrame(FrameEventArgs e) {
             base.OnUpdateFrame(e);
 
-            if (Keyboard[Key.Escape])
+            if (Keyboard[Key.Escape]) {
                 Exit();
+            }
 
-            if (Keyboard[Key.Up] || Keyboard[Key.W])
-                camera.Y += 0.1f;
-            if (Keyboard[Key.Down] || Keyboard[Key.S])
-                camera.Y -= 0.1f;
-            if (Keyboard[Key.A])
-                camera.X -= 0.1f;
-            if (Keyboard[Key.D])
-                camera.X += 0.1f;
+            if (Keyboard[Key.Left]) {
+                playerAngle -= 5f;
+            }
+            if (Keyboard[Key.Right]) {
+                playerAngle += 5f;
+            }
+
+            var playerAngleMatrix = Matrix4.CreateRotationZ((float)(-playerAngle * Math.PI / 180));
+            var playerMovementVector = new Vector3(0, 0, 0);
+
+            if (Keyboard[Key.Up] || Keyboard[Key.W]) {
+                playerMovementVector.Y += 0.1f;
+            }
+            if (Keyboard[Key.Down] || Keyboard[Key.S]) {
+                playerMovementVector.Y -= 0.1f;
+            }
+            if (Keyboard[Key.A]) {
+                playerMovementVector.X -= 0.1f;
+            }
+            if (Keyboard[Key.D]) {
+                playerMovementVector.X += 0.1f;
+            }
+
+            playerPosition = Vector3.Add(playerPosition, Vector3.TransformVector(playerMovementVector, playerAngleMatrix));
         }
 
         protected override void OnRenderFrame(FrameEventArgs e) {
@@ -60,10 +79,12 @@ namespace Labyrinth {
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Matrix4 modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
+            var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref modelview);
-            GL.Translate(Vector3.Multiply(camera, -1f));
+
+            GL.Rotate(playerAngle, Vector3.UnitZ);
+            GL.Translate(Vector3.Multiply(playerPosition, -1f));
 
             GL.Begin(BeginMode.Quads);
             
