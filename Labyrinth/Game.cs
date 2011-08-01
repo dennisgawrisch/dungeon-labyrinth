@@ -28,7 +28,7 @@ namespace Labyrinth {
             GL.Enable(EnableCap.DepthTest);
 
             playerPosition = new Vector3(0.5f, 0.5f, 0.5f);
-            playerAngle = 90;
+            playerAngle = 0;
         }
 
         protected override void OnResize(EventArgs e) {
