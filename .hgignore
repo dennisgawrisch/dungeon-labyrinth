@@ -1,1 +1,4 @@
 syntax: glob
+*.suo
+Labyrinth/bin/*
+Labyrinth/obj/*
