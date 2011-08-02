@@ -13,8 +13,9 @@ namespace Labyrinth {
             }
         }
 
+        private Map map;
         private Vector3 playerPosition;
-        private float playerAngle; // in degrees
+        private float playerAngle; // in degrees, 0 = Y↑, 90 = X→
 
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
@@ -26,6 +27,8 @@ namespace Labyrinth {
 
             GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
+
+            map = new Map(4, 2);
 
             playerPosition = new Vector3(0.5f, 0.5f, 0.5f);
             playerAngle = 0;
@@ -86,61 +89,63 @@ namespace Labyrinth {
             GL.Rotate(playerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(playerPosition, -1f));
 
-            GL.Begin(BeginMode.Quads);
-            
+            var wallsHeight = 2;
+
             GL.Color4(Color4.SaddleBrown);
+            for (var x = 0; x < map.Width; x++) {
+                for (var y = 0; y < map.Height; y++) {
+                    if (Map.CellType.Empty == map.GetCell(x, y)) {
+                        if (Map.CellType.Wall == map.GetCell(x, y - 1)) {
+                            GL.Begin(BeginMode.Quads);
+                            GL.Vertex3(x, y, 0);
+                            GL.Vertex3(x, y, wallsHeight);
+                            GL.Vertex3(x + 1, y, wallsHeight);
+                            GL.Vertex3(x + 1, y, 0);
+                            GL.End();
+                        }
 
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(7, 0, 0);
-            GL.Vertex3(7, 0, 2);
-            GL.Vertex3(0, 0, 2);
+                        if (Map.CellType.Wall == map.GetCell(x, y + 1)) {
+                            GL.Begin(BeginMode.Quads);
+                            GL.Vertex3(x, y + 1, 0);
+                            GL.Vertex3(x, y + 1, wallsHeight);
+                            GL.Vertex3(x + 1, y + 1, wallsHeight);
+                            GL.Vertex3(x + 1, y + 1, 0);
+                            GL.End();
+                        }
 
-            GL.Vertex3(0, 4, 0);
-            GL.Vertex3(7, 4, 0);
-            GL.Vertex3(7, 4, 2);
-            GL.Vertex3(0, 4, 2);
+                        if (Map.CellType.Wall == map.GetCell(x - 1, y)) {
+                            GL.Begin(BeginMode.Quads);
+                            GL.Vertex3(x, y, 0);
+                            GL.Vertex3(x, y, wallsHeight);
+                            GL.Vertex3(x, y + 1, wallsHeight);
+                            GL.Vertex3(x, y + 1, 0);
+                            GL.End();
+                        }
 
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0, 4, 0);
-            GL.Vertex3(0, 4, 2);
-            GL.Vertex3(0, 0, 2);
-
-            GL.Vertex3(7, 0, 0);
-            GL.Vertex3(7, 4, 0);
-            GL.Vertex3(7, 4, 2);
-            GL.Vertex3(7, 0, 2);
-
-            GL.Vertex3(1, 1, 0);
-            GL.Vertex3(4, 1, 0);
-            GL.Vertex3(4, 1, 2);
-            GL.Vertex3(1, 1, 2);
-
-            GL.Vertex3(1, 2, 0);
-            GL.Vertex3(4, 2, 0);
-            GL.Vertex3(4, 2, 2);
-            GL.Vertex3(1, 2, 2);
-
-            GL.Vertex3(1, 1, 0);
-            GL.Vertex3(1, 2, 0);
-            GL.Vertex3(1, 2, 2);
-            GL.Vertex3(1, 1, 2);
-
-            GL.Vertex3(4, 1, 0);
-            GL.Vertex3(4, 2, 0);
-            GL.Vertex3(4, 2, 2);
-            GL.Vertex3(4, 1, 2);
+                        if (Map.CellType.Wall == map.GetCell(x + 1, y)) {
+                            GL.Begin(BeginMode.Quads);
+                            GL.Vertex3(x + 1, y, 0);
+                            GL.Vertex3(x + 1, y, wallsHeight);
+                            GL.Vertex3(x + 1, y + 1, wallsHeight);
+                            GL.Vertex3(x + 1, y + 1, 0);
+                            GL.End();
+                        }
+                    }
+                }
+            }
 
             GL.Color4(Color4.AntiqueWhite);
+            GL.Begin(BeginMode.Quads);
             
             GL.Vertex3(0, 0, 0);
-            GL.Vertex3(7, 0, 0);
-            GL.Vertex3(7, 4, 0);
-            GL.Vertex3(0, 4, 0);
+            GL.Vertex3(map.Width, 0, 0);
+            GL.Vertex3(map.Width, map.Height, 0);
+            GL.Vertex3(0, map.Height, 0);
 
-            GL.Vertex3(0, 0, 2);
-            GL.Vertex3(7, 0, 2);
-            GL.Vertex3(7, 4, 2);
-            GL.Vertex3(0, 4, 2);
+            GL.Vertex3(0, 0, wallsHeight);
+            GL.Vertex3(map.Width, 0, wallsHeight);
+            GL.Vertex3(map.Width, map.Height, wallsHeight);
+            GL.Vertex3(0, map.Height, wallsHeight);
 
             GL.End();
 
