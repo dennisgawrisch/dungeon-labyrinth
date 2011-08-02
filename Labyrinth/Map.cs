@@ -1,4 +1,6 @@
-﻿namespace Labyrinth {
+﻿using System;
+
+namespace Labyrinth {
     class Map {
         public enum CellType {
             Empty,
@@ -10,9 +12,11 @@
         public Map(int Width, int Height) {
             cells = new CellType[Width, Height];
 
+            var rand = new Random();
+
             for (var x = 0; x < Width; x++) {
                 for (var y = 0; y < Height; y++) {
-                    cells[x, y] = CellType.Empty;
+                    cells[x, y] = (rand.Next(100) < 90) ? CellType.Empty : CellType.Wall;
                 }
             }
         }
