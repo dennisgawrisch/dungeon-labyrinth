@@ -74,7 +74,10 @@ namespace Labyrinth {
                 playerMovementVector.X += 0.1f;
             }
 
-            playerPosition = Vector3.Add(playerPosition, Vector3.TransformVector(playerMovementVector, playerAngleMatrix));
+            var newPlayerPosition = Vector3.Add(playerPosition, Vector3.TransformVector(playerMovementVector, playerAngleMatrix));
+            if (Map.CellType.Empty == map.GetCell((int)Math.Floor(newPlayerPosition.X), (int)Math.Floor(newPlayerPosition.Y))) {
+                playerPosition = newPlayerPosition;
+            }
         }
 
         protected override void OnRenderFrame(FrameEventArgs e) {
