@@ -28,7 +28,7 @@ namespace Labyrinth {
             GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
 
-            map = new Map(4, 2);
+            map = new Map(30, 30);
 
             playerPosition = new Vector3(0.5f, 0.5f, 0.5f);
             playerAngle = 0;
