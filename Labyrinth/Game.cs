@@ -17,6 +17,11 @@ namespace Labyrinth {
         private Vector3 playerPosition;
         private float playerAngle; // in degrees, 0 = Y↑, 90 = X→
 
+        private float playerMovementSpeed = 0.1f; // in cell units
+        private float playerTurnSpeed = 5f; // in degrees
+
+        private float wallsHeight = 2f;
+
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
             VSync = VSyncMode.On;
@@ -52,26 +57,26 @@ namespace Labyrinth {
             }
 
             if (Keyboard[Key.Left]) {
-                playerAngle -= 5f;
+                playerAngle -= playerTurnSpeed;
             }
             if (Keyboard[Key.Right]) {
-                playerAngle += 5f;
+                playerAngle += playerTurnSpeed;
             }
 
             var playerAngleMatrix = Matrix4.CreateRotationZ((float)(-playerAngle * Math.PI / 180));
             var playerMovementVector = new Vector3(0, 0, 0);
 
             if (Keyboard[Key.Up] || Keyboard[Key.W]) {
-                playerMovementVector.Y += 0.1f;
+                playerMovementVector.Y += playerMovementSpeed;
             }
             if (Keyboard[Key.Down] || Keyboard[Key.S]) {
-                playerMovementVector.Y -= 0.1f;
+                playerMovementVector.Y -= playerMovementSpeed;
             }
             if (Keyboard[Key.A]) {
-                playerMovementVector.X -= 0.1f;
+                playerMovementVector.X -= playerMovementSpeed;
             }
             if (Keyboard[Key.D]) {
-                playerMovementVector.X += 0.1f;
+                playerMovementVector.X += playerMovementSpeed;
             }
 
             playerMovementVector = Vector3.TransformVector(playerMovementVector, playerAngleMatrix);
@@ -100,8 +105,6 @@ namespace Labyrinth {
 
             GL.Rotate(playerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(playerPosition, -1f));
-
-            var wallsHeight = 2;
 
             GL.Color4(Color4.SaddleBrown);
             for (var x = 0; x < map.Width; x++) {
