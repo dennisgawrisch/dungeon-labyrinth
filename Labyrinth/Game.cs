@@ -22,7 +22,7 @@ namespace Labyrinth {
         private float playerMovementSpeed = 0.1f; // in cell units
         private float playerTurnSpeed = 5f; // in degrees
 
-        private float wallsHeight = 2f;
+        private float wallsHeight = 0.7f;
 
         private int textureWall;
 
@@ -42,7 +42,7 @@ namespace Labyrinth {
 
             map = new Map(30, 30);
 
-            playerPosition = new Vector3(0.5f, 0.5f, 0.5f);
+            playerPosition = new Vector3(0.5f, 0.5f, 0.2f);
             playerAngle = 0;
         }
 
