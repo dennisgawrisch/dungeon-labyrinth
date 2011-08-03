@@ -19,8 +19,8 @@ namespace Labyrinth {
         private Vector3 playerPosition;
         private float playerAngle; // in degrees, 0 = Y↑, 90 = X→
 
-        private float playerMovementSpeed = 0.1f; // in cell units
-        private float playerTurnSpeed = 5f; // in degrees
+        private float playerMovementSpeed = 0.05f; // in cell units
+        private float playerTurnSpeed = 5; // in degrees
 
         private float wallsHeight = 0.7f;
 
@@ -37,6 +37,8 @@ namespace Labyrinth {
             GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Light0);
 
             textureWall = LoadTexture("../../textures/wall.png");
 
@@ -112,6 +114,12 @@ namespace Labyrinth {
 
             GL.Rotate(playerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(playerPosition, -1f));
+
+            var torchPosition = new Vector4(playerPosition);
+            torchPosition.W = 1;
+            GL.Light(LightName.Light0, LightParameter.Position, torchPosition);
+            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, 0.1f);
+            GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
 
             for (var x = 0; x < map.Width; x++) {
                 for (var y = 0; y < map.Height; y++) {
