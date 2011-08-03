@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -22,6 +24,8 @@ namespace Labyrinth {
 
         private float wallsHeight = 2f;
 
+        private int textureWall;
+
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
             VSync = VSyncMode.On;
@@ -32,6 +36,9 @@ namespace Labyrinth {
 
             GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.Texture2D);
+
+            textureWall = LoadTexture("../../textures/wall.png");
 
             map = new Map(30, 30);
 
@@ -106,65 +113,76 @@ namespace Labyrinth {
             GL.Rotate(playerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(playerPosition, -1f));
 
-            GL.Color4(Color4.SaddleBrown);
             for (var x = 0; x < map.Width; x++) {
                 for (var y = 0; y < map.Height; y++) {
                     if (Map.CellType.Empty == map.GetCell(x, y)) {
-                        if (Map.CellType.Wall == map.GetCell(x, y - 1)) {
-                            GL.Begin(BeginMode.Quads);
-                            GL.Vertex3(x, y, 0);
-                            GL.Vertex3(x, y, wallsHeight);
-                            GL.Vertex3(x + 1, y, wallsHeight);
-                            GL.Vertex3(x + 1, y, 0);
-                            GL.End();
-                        }
-
                         if (Map.CellType.Wall == map.GetCell(x, y + 1)) {
-                            GL.Begin(BeginMode.Quads);
-                            GL.Vertex3(x, y + 1, 0);
-                            GL.Vertex3(x, y + 1, wallsHeight);
-                            GL.Vertex3(x + 1, y + 1, wallsHeight);
-                            GL.Vertex3(x + 1, y + 1, 0);
-                            GL.End();
+                            RenderWall(new Vector2(x, y + 1), new Vector2(x + 1, y + 1));
                         }
-
+                        if (Map.CellType.Wall == map.GetCell(x, y - 1)) {
+                            RenderWall(new Vector2(x + 1, y), new Vector2(x, y));
+                        }
                         if (Map.CellType.Wall == map.GetCell(x - 1, y)) {
-                            GL.Begin(BeginMode.Quads);
-                            GL.Vertex3(x, y, 0);
-                            GL.Vertex3(x, y, wallsHeight);
-                            GL.Vertex3(x, y + 1, wallsHeight);
-                            GL.Vertex3(x, y + 1, 0);
-                            GL.End();
+                            RenderWall(new Vector2(x, y), new Vector2(x, y + 1));
                         }
-
                         if (Map.CellType.Wall == map.GetCell(x + 1, y)) {
-                            GL.Begin(BeginMode.Quads);
-                            GL.Vertex3(x + 1, y, 0);
-                            GL.Vertex3(x + 1, y, wallsHeight);
-                            GL.Vertex3(x + 1, y + 1, wallsHeight);
-                            GL.Vertex3(x + 1, y + 1, 0);
-                            GL.End();
+                            RenderWall(new Vector2(x + 1, y + 1), new Vector2(x + 1, y));
                         }
                     }
                 }
             }
 
-            GL.Color4(Color4.AntiqueWhite);
-            GL.Begin(BeginMode.Quads);
-            
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(map.Width, 0, 0);
-            GL.Vertex3(map.Width, map.Height, 0);
-            GL.Vertex3(0, map.Height, 0);
-
-            GL.Vertex3(0, 0, wallsHeight);
-            GL.Vertex3(map.Width, 0, wallsHeight);
-            GL.Vertex3(map.Width, map.Height, wallsHeight);
-            GL.Vertex3(0, map.Height, wallsHeight);
-
-            GL.End();
+            RenderFloorAndCeiling();
 
             SwapBuffers();
+        }
+
+        private int LoadTexture(string filename) {
+            var bitmap = new Bitmap(filename);
+
+            var texture = GL.GenTexture();
+            GL.BindTexture(TextureTarget.Texture2D, texture);
+
+            var bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
+            bitmap.UnlockBits(bitmapData);
+
+            // TODO make research on these parameters
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
+            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
+            
+            return texture;
+        }
+
+        private void RenderWall(Vector2 A, Vector2 B) {
+            GL.Color4(Color4.Transparent);
+            GL.BindTexture(TextureTarget.Texture2D, textureWall);
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0, 0); GL.Vertex3(A.X, A.Y, wallsHeight);
+            GL.TexCoord2(1, 0); GL.Vertex3(B.X, B.Y, wallsHeight);
+            GL.TexCoord2(1, wallsHeight); GL.Vertex3(B.X, B.Y, 0);
+            GL.TexCoord2(0, wallsHeight); GL.Vertex3(A.X, A.Y, 0); 
+            GL.End();
+        }
+
+        private void RenderFloorAndCeiling() {
+            GL.Color4(Color4.Transparent);
+            GL.BindTexture(TextureTarget.Texture2D, textureWall);
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0, map.Height); GL.Vertex3(0, 0, 0);
+            GL.TexCoord2(map.Width, map.Height); GL.Vertex3(map.Width, 0, 0);
+            GL.TexCoord2(map.Width, 0); GL.Vertex3(map.Width, map.Height, 0);
+            GL.TexCoord2(0, 0); GL.Vertex3(0, map.Height, 0);
+            GL.End();
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0, 0); GL.Vertex3(0, 0, wallsHeight);
+            GL.TexCoord2(map.Width, 0); GL.Vertex3(map.Width, 0, wallsHeight);
+            GL.TexCoord2(map.Width, map.Height); GL.Vertex3(map.Width, map.Height, wallsHeight);
+            GL.TexCoord2(0, map.Height); GL.Vertex3(0, map.Height, wallsHeight);
+            GL.End();
         }
     }
 }
