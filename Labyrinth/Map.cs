@@ -84,10 +84,6 @@ namespace Labyrinth {
     					position = positionsStack.Pop();
     				}
     			} while (positionsStack.Count > 0);
-
-                if (0 == possibleFinishPositions.Count) {
-                    position.X = 5;
-                }
             } while (0 == possibleFinishPositions.Count);
 
             finishPosition = possibleFinishPositions[rand.Next(0, possibleFinishPositions.Count)];
