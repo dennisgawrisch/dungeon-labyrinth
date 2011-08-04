@@ -7,7 +7,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
 namespace Labyrinth {
-    class Game {
+    class Game : GameWindowLayer {
 		private Random rand;
 
         private Map map;
@@ -37,7 +37,7 @@ namespace Labyrinth {
             playerAngle = 0;
         }
 
-        public void OnUpdateFrame(GameWindow window) {
+        public override void OnUpdateFrame(GameWindow window) {
             if (window.Keyboard[Key.Escape]) {
                 window.Exit();
             }
@@ -84,7 +84,7 @@ namespace Labyrinth {
             }
         }
 
-        public void OnRenderFrame(GameWindow window) {
+        public override void OnRenderFrame(GameWindow window) {
             var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, window.Width / (float)window.Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref projection);

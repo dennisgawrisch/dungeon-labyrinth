@@ -37,6 +37,7 @@
     <StartupObject>Labyrinth.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GameWindowLayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Map.cs" />
