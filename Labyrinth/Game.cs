@@ -29,7 +29,7 @@ namespace Labyrinth {
         private int textureWall;
 		
 		private float torchLight = 0.15f;
-		private float torchLightMaxChange = 0.005f;
+		private float torchLightMaxChange = 0.01f;
 		private float torchLightMin = 0.05f;
 		private float torchLightMax = 0.3f;
 		
@@ -115,18 +115,31 @@ namespace Labyrinth {
             base.OnRenderFrame(e);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-            var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
-            GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadMatrix(ref modelview);
-
-            GL.Rotate(playerAngle, Vector3.UnitZ);
-            GL.Translate(Vector3.Multiply(playerPosition, -1f));
+			
+			if (true) {
+	            GL.Disable(EnableCap.Lighting);
+	
+				var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.Multiply(Vector3.UnitZ, -1), Vector3.UnitY);
+	            GL.MatrixMode(MatrixMode.Modelview);
+	            GL.LoadMatrix(ref modelview);
+				
+				playerPosition.X = map.Width / 2;
+				playerPosition.Y = map.Height / 2;
+				playerPosition.Z = 40;
+	            GL.Translate(Vector3.Multiply(playerPosition, -1f));
+			} else {
+	            var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
+	            GL.MatrixMode(MatrixMode.Modelview);
+	            GL.LoadMatrix(ref modelview);
+	
+	            GL.Rotate(playerAngle, Vector3.UnitZ);
+	            GL.Translate(Vector3.Multiply(playerPosition, -1f));
+			}
 
             var torchPosition = new Vector4(playerPosition);
             torchPosition.W = 1;
 			
-			torchLight += ((float)rand.NextDouble() * 2f - 1f) * torchLightMaxChange;
+			torchLight += (rand.Next(-100, +100) / 100f) * torchLightMaxChange;
 			torchLight = Math.Max(torchLight, torchLightMin);
 			torchLight = Math.Min(torchLight, torchLightMax);
 			
