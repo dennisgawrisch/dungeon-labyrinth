@@ -52,7 +52,7 @@ namespace Labyrinth {
 
             map = new Map(30, 30);
 
-            playerPosition = new Vector3(0.5f, 0.5f, 0.2f);
+            playerPosition = new Vector3(map.StartPosition.X + 0.5f, map.StartPosition.Y + 0.5f, 0.2f);
             playerAngle = 0;
         }
 
