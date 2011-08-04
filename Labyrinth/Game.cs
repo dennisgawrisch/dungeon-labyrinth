@@ -34,21 +34,13 @@ namespace Labyrinth {
         private float torchLightMaxChange = 1f;
 
         public Game()
-            : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
+            : base(800, 600, GraphicsMode.Default, "Labyrinth") {
             VSync = VSyncMode.On;
 			rand = new Random();
         }
 
         protected override void OnLoad(EventArgs e) {
             base.OnLoad(e);
-
-            GL.ClearColor(Color4.Black);
-            GL.Color4(Color4.Transparent);
-            GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.Texture2D);
-            GL.Enable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Light0);
-            GL.Enable(EnableCap.Light1);
 
             textureWall = LoadTexture("../../textures/wall.png");
 
@@ -60,12 +52,7 @@ namespace Labyrinth {
 
         protected override void OnResize(EventArgs e) {
             base.OnResize(e);
-
             GL.Viewport(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height);
-
-            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadMatrix(ref projection);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e) {
@@ -119,6 +106,18 @@ namespace Labyrinth {
 
         protected override void OnRenderFrame(FrameEventArgs e) {
             base.OnRenderFrame(e);
+
+            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadMatrix(ref projection);
+            
+            GL.ClearColor(Color4.Black);
+            GL.Color4(Color4.Transparent);
+            GL.Enable(EnableCap.DepthTest);
+            GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Light0);
+            GL.Enable(EnableCap.Light1);
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
