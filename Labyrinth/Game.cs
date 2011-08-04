@@ -28,10 +28,10 @@ namespace Labyrinth {
 
         private int textureWall;
 
-		private float torchLight = 0.15f;
-		private float torchLightMaxChange = 0.01f;
-		private float torchLightMin = 0.05f;
-		private float torchLightMax = 0.3f;
+		private float torchLightMin = 0;
+		private float torchLightMax = 10;
+        private float torchLight = 5;
+        private float torchLightMaxChange = 1f;
 
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
@@ -137,7 +137,7 @@ namespace Labyrinth {
 			torchLight = Math.Min(torchLight, torchLightMax);
 
             GL.Light(LightName.Light0, LightParameter.Position, torchPosition);
-            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, torchLight);
+            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, (-torchLight / 3f + 10.3333f) / 100f);
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
 
             GL.Light(LightName.Light1, LightParameter.Position, new Vector4(map.FinishPosition.X + 0.5f, map.FinishPosition.Y + 0.5f, wallsHeight * 100, 1));
