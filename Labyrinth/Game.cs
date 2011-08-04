@@ -7,14 +7,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
 namespace Labyrinth {
-    class Game : GameWindow {
-        [STAThread]
-        static void Main() {
-            using (var game = new Game()) {
-                game.Run(30);
-            }
-        }
-
+    class Game {
 		private Random rand;
 
         private Map map;
@@ -33,14 +26,8 @@ namespace Labyrinth {
         private float torchLight = 5;
         private float torchLightMaxChange = 1f;
 
-        public Game()
-            : base(800, 600, GraphicsMode.Default, "Labyrinth") {
-            VSync = VSyncMode.On;
+        public Game() {
 			rand = new Random();
-        }
-
-        protected override void OnLoad(EventArgs e) {
-            base.OnLoad(e);
 
             textureWall = LoadTexture("../../textures/wall.png");
 
@@ -50,38 +37,31 @@ namespace Labyrinth {
             playerAngle = 0;
         }
 
-        protected override void OnResize(EventArgs e) {
-            base.OnResize(e);
-            GL.Viewport(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height);
-        }
-
-        protected override void OnUpdateFrame(FrameEventArgs e) {
-            base.OnUpdateFrame(e);
-
-            if (Keyboard[Key.Escape]) {
-                Exit();
+        public void OnUpdateFrame(GameWindow window) {
+            if (window.Keyboard[Key.Escape]) {
+                window.Exit();
             }
 
-            if (Keyboard[Key.Left]) {
+            if (window.Keyboard[Key.Left]) {
                 playerAngle -= playerTurnSpeed;
             }
-            if (Keyboard[Key.Right]) {
+            if (window.Keyboard[Key.Right]) {
                 playerAngle += playerTurnSpeed;
             }
 
             var playerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-playerAngle));
             var playerMovementVector = new Vector3(0, 0, 0);
 
-            if (Keyboard[Key.Up] || Keyboard[Key.W]) {
+            if (window.Keyboard[Key.Up] || window.Keyboard[Key.W]) {
                 playerMovementVector.Y += playerMovementSpeed;
             }
-            if (Keyboard[Key.Down] || Keyboard[Key.S]) {
+            if (window.Keyboard[Key.Down] || window.Keyboard[Key.S]) {
                 playerMovementVector.Y -= playerMovementSpeed;
             }
-            if (Keyboard[Key.A]) {
+            if (window.Keyboard[Key.A]) {
                 playerMovementVector.X -= playerMovementSpeed;
             }
-            if (Keyboard[Key.D]) {
+            if (window.Keyboard[Key.D]) {
                 playerMovementVector.X += playerMovementSpeed;
             }
 
@@ -100,14 +80,12 @@ namespace Labyrinth {
             }
 
             if (((int)(Math.Floor(playerPosition.X)) == map.FinishPosition.X) && ((int)(Math.Floor(playerPosition.Y)) == map.FinishPosition.Y)) {
-                Exit(); // TODO
+                window.Exit(); // TODO
             }
         }
 
-        protected override void OnRenderFrame(FrameEventArgs e) {
-            base.OnRenderFrame(e);
-
-            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
+        public void OnRenderFrame(GameWindow window) {
+            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, window.Width / (float)window.Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref projection);
             
@@ -173,8 +151,6 @@ namespace Labyrinth {
                     }
                 }
             }
-
-            SwapBuffers();
         }
 
         private int LoadTexture(string filename) {
