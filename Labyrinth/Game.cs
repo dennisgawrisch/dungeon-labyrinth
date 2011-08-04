@@ -111,6 +111,10 @@ namespace Labyrinth {
             if (Map.CellType.Empty == map.GetCell(newPlayerPosition.Xy)) {
                 playerPosition = newPlayerPosition;
             }
+
+            if (((int)(Math.Floor(playerPosition.X)) == map.FinishPosition.X) && ((int)(Math.Floor(playerPosition.Y)) == map.FinishPosition.Y)) {
+                Exit(); // TODO
+            }
         }
 
         protected override void OnRenderFrame(FrameEventArgs e) {
