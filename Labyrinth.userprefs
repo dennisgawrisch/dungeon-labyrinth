@@ -2,7 +2,7 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Labyrinth/Game.cs">
     <Files>
-      <File FileName="Labyrinth/Game.cs" Line="170" Column="1" />
+      <File FileName="Labyrinth/Game.cs" Line="179" Column="21" />
       <File FileName="Labyrinth/Map.cs" Line="98" Column="45" />
     </Files>
   </MonoDevelop.Ide.Workbench>
