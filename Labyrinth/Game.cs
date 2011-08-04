@@ -116,25 +116,12 @@ namespace Labyrinth {
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			
-			if (true) {
-	            GL.Disable(EnableCap.Lighting);
-	
-				var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.Multiply(Vector3.UnitZ, -1), Vector3.UnitY);
-	            GL.MatrixMode(MatrixMode.Modelview);
-	            GL.LoadMatrix(ref modelview);
-				
-				playerPosition.X = map.Width / 2;
-				playerPosition.Y = map.Height / 2;
-				playerPosition.Z = Math.Max(map.Width, map.Height) * 1.5f;
-	            GL.Translate(Vector3.Multiply(playerPosition, -1f));
-			} else {
-	            var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
-	            GL.MatrixMode(MatrixMode.Modelview);
-	            GL.LoadMatrix(ref modelview);
-	
-	            GL.Rotate(playerAngle, Vector3.UnitZ);
-	            GL.Translate(Vector3.Multiply(playerPosition, -1f));
-			}
+            var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.LoadMatrix(ref modelview);
+
+            GL.Rotate(playerAngle, Vector3.UnitZ);
+            GL.Translate(Vector3.Multiply(playerPosition, -1f));
 
             var torchPosition = new Vector4(playerPosition);
             torchPosition.W = 1;
