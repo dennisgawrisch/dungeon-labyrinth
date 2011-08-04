@@ -15,6 +15,8 @@ namespace Labyrinth {
             }
         }
 
+		private Random rand;
+
         private Map map;
         private Vector3 playerPosition;
         private float playerAngle; // in degrees, 0 = Y↑, 90 = X→
@@ -25,10 +27,16 @@ namespace Labyrinth {
         private float wallsHeight = 0.7f;
 
         private int textureWall;
-
+		
+		private float torchLight = 0.15f;
+		private float torchLightMaxChange = 0.005f;
+		private float torchLightMin = 0.05f;
+		private float torchLightMax = 0.3f;
+		
         public Game()
             : base(800, 600, GraphicsMode.Default, "OpenGL Test #1") {
             VSync = VSyncMode.On;
+			rand = new Random();
         }
 
         protected override void OnLoad(EventArgs e) {
@@ -117,8 +125,13 @@ namespace Labyrinth {
 
             var torchPosition = new Vector4(playerPosition);
             torchPosition.W = 1;
+			
+			torchLight += ((float)rand.NextDouble() * 2f - 1f) * torchLightMaxChange;
+			torchLight = Math.Max(torchLight, torchLightMin);
+			torchLight = Math.Min(torchLight, torchLightMax);
+			
             GL.Light(LightName.Light0, LightParameter.Position, torchPosition);
-            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, 0.1f);
+            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, torchLight);
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
 
             for (var x = 0; x < map.Width; x++) {
@@ -136,11 +149,11 @@ namespace Labyrinth {
                         if (Map.CellType.Wall == map.GetCell(x + 1, y)) {
                             RenderWall(new Vector2(x + 1, y + 1), new Vector2(x + 1, y));
                         }
+						
+						RenderFloorAndCeiling(new Vector2(x, y));
                     }
                 }
             }
-
-            RenderFloorAndCeiling();
 
             SwapBuffers();
         }
@@ -174,22 +187,22 @@ namespace Labyrinth {
             GL.End();
         }
 
-        private void RenderFloorAndCeiling() {
+        private void RenderFloorAndCeiling(Vector2 position) {
             GL.Color4(Color4.Transparent);
             GL.BindTexture(TextureTarget.Texture2D, textureWall);
 
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, map.Height); GL.Vertex3(0, 0, 0);
-            GL.TexCoord2(map.Width, map.Height); GL.Vertex3(map.Width, 0, 0);
-            GL.TexCoord2(map.Width, 0); GL.Vertex3(map.Width, map.Height, 0);
-            GL.TexCoord2(0, 0); GL.Vertex3(0, map.Height, 0);
+            GL.TexCoord2(0, 1); GL.Vertex3(position.X, position.Y, 0);
+            GL.TexCoord2(1, 1); GL.Vertex3(position.X + 1, position.Y, 0);
+            GL.TexCoord2(1, 0); GL.Vertex3(position.X + 1, position.Y + 1, 0);
+            GL.TexCoord2(0, 0); GL.Vertex3(position.X, position.Y + 1, 0);
             GL.End();
 
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(0, 0, wallsHeight);
-            GL.TexCoord2(map.Width, 0); GL.Vertex3(map.Width, 0, wallsHeight);
-            GL.TexCoord2(map.Width, map.Height); GL.Vertex3(map.Width, map.Height, wallsHeight);
-            GL.TexCoord2(0, map.Height); GL.Vertex3(0, map.Height, wallsHeight);
+            GL.TexCoord2(0, 0); GL.Vertex3(position.X, position.Y, wallsHeight);
+            GL.TexCoord2(1, 0); GL.Vertex3(position.X + 1, position.Y, wallsHeight);
+            GL.TexCoord2(1, 1); GL.Vertex3(position.X + 1, position.Y + 1, wallsHeight);
+            GL.TexCoord2(0, 1); GL.Vertex3(position.X, position.Y + 1, wallsHeight);
             GL.End();
         }
     }
