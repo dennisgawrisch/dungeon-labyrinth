@@ -19,87 +19,84 @@ namespace Labyrinth {
 
             cells = new CellType[Width, Height];
 
-            for (var x = 0; x < Width; x++) {
-                for (var y = 0; y < Height; y++) {
-                      cells[x, y] = CellType.Wall;
-                }
-            }
-
-            startPosition = RandomPosition();
-            
 			var maxMovementTries = 15;
 			var directionChangePossibility = 50;
-			
-			var position = startPosition;
-			var positionsStack = new Stack<Vector2>(Width * Height);
-			positionsStack.Push(position);
-			var direction = Vector2.UnitY;
-			
-			var possibleFinishPositions = new List<Vector2>(Width * Height);
-			var minPathToFinish = Math.Sqrt(Width * Height);
-				
-			do {
-				SetCell(position, CellType.Empty);
-				
-				var success = false;
-				for (var tries = 0; !success && (tries < maxMovementTries); tries++) {
-					var directionChange = rand.Next(-200, +200);
-					if (directionChange < directionChangePossibility - 200) {
-						direction = direction.PerpendicularLeft;
-					} else if (directionChange > 200 - directionChangePossibility) {
-						direction = direction.PerpendicularRight;
-					}
-	
-					var next = Vector2.Add(position, direction);
-					var leftToNext = Vector2.Add(next, direction.PerpendicularLeft);
-					var rightToNext = Vector2.Add(next, direction.PerpendicularRight);
-					var nextNext = Vector2.Add(next, direction);
-					var leftToNextNext = Vector2.Add(nextNext, direction.PerpendicularLeft);
-					var rightToNextNext = Vector2.Add(nextNext, direction.PerpendicularRight);
-					
-					if (
-					    (0 <= next.X) && (next.X < Width)
-					    && (0 <= next.Y) && (next.Y < Height)
-					    && (CellType.Wall == GetCell(next))
-					    && (CellType.Wall == GetCell(leftToNext))
-					    && (CellType.Wall == GetCell(rightToNext))
-					    && (CellType.Wall == GetCell(nextNext))
-					    && (CellType.Wall == GetCell(leftToNextNext))
-					    && (CellType.Wall == GetCell(rightToNextNext))
-					) {
-						position = next;
-						success = true;
-					}
-				}
-				
-				if (success) {
-					positionsStack.Push(position);
-				} else {
-					if (positionsStack.Count > minPathToFinish) {
-						possibleFinishPositions.Add(position);
-					}
+            var minPathToFinish = Math.Sqrt(Width * Height);
 
-					position = positionsStack.Pop();
-				}
-			} while (positionsStack.Count > 0);
-			
-			if (0 == possibleFinishPositions.Count) {
-	            for (var x = 0; x < Width; x++) {
-	                for (var y = 0; y < Height; y++) {
-						finishPosition = new Vector2(x, y);
-	                	if ((CellType.Empty == GetCell(finishPosition)) && !startPosition.Equals(finishPosition)) {
-							possibleFinishPositions.Add(finishPosition);
-						}
-	                }
-	            }
-			}
-			finishPosition = possibleFinishPositions[rand.Next(0, possibleFinishPositions.Count)];
+            var possibleFinishPositions = new List<Vector2>(Width * Height);
+
+            do {
+                for (var x = 0; x < Width; x++) {
+                    for (var y = 0; y < Height; y++) {
+                          cells[x, y] = CellType.Wall;
+                    }
+                }
+
+                startPosition = RandomPosition();
+                possibleFinishPositions.Clear();
+
+    			var position = startPosition;
+    			var positionsStack = new Stack<Vector2>(Width * Height);
+    			positionsStack.Push(position);
+    			var direction = Vector2.UnitY;
+
+    			do {
+    				SetCell(position, CellType.Empty);
+    
+    				var success = false;
+    				for (var tries = 0; !success && (tries < maxMovementTries); tries++) {
+    					var directionChange = rand.Next(-200, +200);
+    					if (directionChange < directionChangePossibility - 200) {
+    						direction = direction.PerpendicularLeft;
+    					} else if (directionChange > 200 - directionChangePossibility) {
+    						direction = direction.PerpendicularRight;
+    					}
+    
+    					var next = Vector2.Add(position, direction);
+    					var leftToNext = Vector2.Add(next, direction.PerpendicularLeft);
+    					var rightToNext = Vector2.Add(next, direction.PerpendicularRight);
+    					var nextNext = Vector2.Add(next, direction);
+    					var leftToNextNext = Vector2.Add(nextNext, direction.PerpendicularLeft);
+    					var rightToNextNext = Vector2.Add(nextNext, direction.PerpendicularRight);
+    
+    					if (
+    					    (0 <= next.X) && (next.X < Width)
+    					    && (0 <= next.Y) && (next.Y < Height)
+    					    && (CellType.Wall == GetCell(next))
+    					    && (CellType.Wall == GetCell(leftToNext))
+    					    && (CellType.Wall == GetCell(rightToNext))
+    					    && (CellType.Wall == GetCell(nextNext))
+    					    && (CellType.Wall == GetCell(leftToNextNext))
+    					    && (CellType.Wall == GetCell(rightToNextNext))
+    					) {
+    						position = next;
+    						success = true;
+    					}
+    				}
+    
+    				if (success) {
+    					positionsStack.Push(position);
+    				} else {
+    					if (positionsStack.Count > minPathToFinish) {
+    						possibleFinishPositions.Add(position);
+    					}
+    
+    					position = positionsStack.Pop();
+    				}
+    			} while (positionsStack.Count > 0);
+
+                if (0 == possibleFinishPositions.Count) {
+                    position.X = 5;
+                }
+            } while (0 == possibleFinishPositions.Count);
+
+            finishPosition = possibleFinishPositions[rand.Next(0, possibleFinishPositions.Count)];
         }
 
         public int Width {
             get { return cells.GetLength(0); }
         }
-        
+
         public int Height {
             get { return cells.GetLength(1); }
         }

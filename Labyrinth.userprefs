@@ -2,8 +2,8 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Labyrinth/Game.cs">
     <Files>
-      <File FileName="Labyrinth/Game.cs" Line="179" Column="21" />
-      <File FileName="Labyrinth/Map.cs" Line="98" Column="45" />
+      <File FileName="Labyrinth/Game.cs" Line="193" Column="37" />
+      <File FileName="Labyrinth/Map.cs" Line="103" Column="27" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
