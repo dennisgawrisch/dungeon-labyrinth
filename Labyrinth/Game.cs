@@ -140,12 +140,12 @@ namespace Labyrinth {
             GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, torchLight);
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
 
-            GL.Light(LightName.Light1, LightParameter.Position, new Vector4(map.FinishPosition.X + 0.5f, map.FinishPosition.Y + 0.5f, wallsHeight * 2, 1));
+            GL.Light(LightName.Light1, LightParameter.Position, new Vector4(map.FinishPosition.X + 0.5f, map.FinishPosition.Y + 0.5f, wallsHeight * 100, 1));
             GL.Light(LightName.Light1, LightParameter.Diffuse, Color4.White);
             GL.Light(LightName.Light1, LightParameter.Specular, Color4.White);
-            GL.Light(LightName.Light1, LightParameter.ConstantAttenuation, 0.1f);
+            GL.Light(LightName.Light1, LightParameter.ConstantAttenuation, 0f);
             GL.Light(LightName.Light1, LightParameter.SpotDirection, new Vector4(0, 0, -1, 0));
-            GL.Light(LightName.Light1, LightParameter.SpotCutoff, 60);
+            GL.Light(LightName.Light1, LightParameter.SpotCutoff, 1);
 
             for (var x = 0; x < map.Width; x++) {
                 for (var y = 0; y < map.Height; y++) {
