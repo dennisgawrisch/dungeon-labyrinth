@@ -80,7 +80,7 @@ namespace Labyrinth {
                 playerAngle += playerTurnSpeed;
             }
 
-            var playerAngleMatrix = Matrix4.CreateRotationZ((float)(-playerAngle * Math.PI / 180));
+            var playerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-playerAngle));
             var playerMovementVector = new Vector3(0, 0, 0);
 
             if (Keyboard[Key.Up] || Keyboard[Key.W]) {
@@ -100,13 +100,13 @@ namespace Labyrinth {
 
             var newPlayerPosition = playerPosition;
             newPlayerPosition.X += playerMovementVector.X;
-            if (Map.CellType.Empty == map.GetCell((int)Math.Floor(newPlayerPosition.X), (int)Math.Floor(newPlayerPosition.Y))) {
+            if (Map.CellType.Empty == map.GetCell(newPlayerPosition.Xy)) {
                 playerPosition = newPlayerPosition;
             }
 
             newPlayerPosition = playerPosition;
             newPlayerPosition.Y += playerMovementVector.Y;
-            if (Map.CellType.Empty == map.GetCell((int)Math.Floor(newPlayerPosition.X), (int)Math.Floor(newPlayerPosition.Y))) {
+            if (Map.CellType.Empty == map.GetCell(newPlayerPosition.Xy)) {
                 playerPosition = newPlayerPosition;
             }
         }
@@ -168,7 +168,6 @@ namespace Labyrinth {
             GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, bitmapData.Width, bitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bitmapData.Scan0);
             bitmap.UnlockBits(bitmapData);
 
-            // TODO make research on these parameters
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             
