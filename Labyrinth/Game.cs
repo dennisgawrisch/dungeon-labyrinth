@@ -50,7 +50,7 @@ namespace Labyrinth {
 
             textureWall = LoadTexture("../../textures/wall.png");
 
-            map = new Map(30, 30);
+            map = new Map(25, 25); // TODO parametrize
 
             playerPosition = new Vector3(map.StartPosition.X + 0.5f, map.StartPosition.Y + 0.5f, 0.2f);
             playerAngle = 0;
@@ -60,8 +60,8 @@ namespace Labyrinth {
             base.OnResize(e);
 
             GL.Viewport(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height);
-
-            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 0.00001f, 64.0f);
+			
+            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Width / (float)Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref projection);
         }
@@ -125,7 +125,7 @@ namespace Labyrinth {
 				
 				playerPosition.X = map.Width / 2;
 				playerPosition.Y = map.Height / 2;
-				playerPosition.Z = 40;
+				playerPosition.Z = Math.Max(map.Width, map.Height) * 1.5f;
 	            GL.Translate(Vector3.Multiply(playerPosition, -1f));
 			} else {
 	            var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
