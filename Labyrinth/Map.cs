@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using OpenTK;
 
 namespace Labyrinth {
@@ -25,8 +26,47 @@ namespace Labyrinth {
             }
 
             startPosition = RandomPosition();
-
-            SetCell(startPosition, CellType.Empty);
+            
+			var maxMovementTries = 3;
+			var directionChangePossibility = 10;
+			
+			var position = startPosition;
+			var positionsStack = new Stack<Vector2>(Width * Height);
+			var direction = Vector2.UnitY;
+			do {
+				SetCell(position, CellType.Empty);
+				
+				var success = false;
+				for (var tries = 0; !success && tries < maxMovementTries; tries++) {
+					var directionChange = rand.Next(-100, +100);
+					if (directionChange < -maxMovementTries) {
+						direction = direction.PerpendicularLeft;
+					} else if (directionChange > +maxMovementTries) {
+						direction = direction.PerpendicularRight;
+					}
+	
+					var nextPosition = Vector2.Add(position, direction);
+					var leftToNextPosition = Vector2.Add(nextPosition, direction.PerpendicularLeft);
+					var rightToNextPosition = Vector2.Add(nextPosition, direction.PerpendicularRight);
+					
+					if (
+					    (0 <= nextPosition.X) && (nextPosition.X < Width)
+					    && (0 <= nextPosition.Y) && (nextPosition.Y < Height)
+					    && (CellType.Wall == GetCell(nextPosition))
+					    && (CellType.Wall == GetCell(leftToNextPosition))
+					    && (CellType.Wall == GetCell(rightToNextPosition))
+					) {
+						position = nextPosition;
+						success = true;
+					}
+				}
+				
+				if (success) {
+					positionsStack.Push(position);
+				} else {
+					position = positionsStack.Pop();
+				}
+			} while (positionsStack.Count > 0);
         }
 
         public int Width {
@@ -66,7 +106,7 @@ namespace Labyrinth {
         }
 
         protected Vector2 RandomPosition() {
-            return new Vector2(rand.Next(0, Width - 1), rand.Next(0, Height - 1));
+            return new Vector2(rand.Next(0, Width), rand.Next(0, Height));
         }
     }
 }
