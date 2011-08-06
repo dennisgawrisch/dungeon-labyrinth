@@ -34,7 +34,15 @@ namespace Labyrinth {
             map = new Map(10, 10); // TODO parametrize
 
             playerPosition = new Vector3(map.StartPosition.X + 0.5f, map.StartPosition.Y + 0.5f, 0.5f);
-            playerAngle = 0;
+
+            for (playerAngle = 0; playerAngle < 360; playerAngle += 90) {
+                var playerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-playerAngle));
+                var playerMovementVector = Vector3.TransformVector(Vector3.UnitY, playerAngleMatrix);
+                var newPlayerPosition = Vector3.Add(playerPosition, playerMovementVector);
+                if (Map.CellType.Empty == map.GetCell(newPlayerPosition.Xy)) {
+                    break;
+                }
+            }
         }
 
         public override void OnUpdateFrame(GameWindow window) {
