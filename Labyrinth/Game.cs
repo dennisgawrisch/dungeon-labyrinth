@@ -46,10 +46,6 @@ namespace Labyrinth {
         }
 
         public override void OnUpdateFrame(GameWindow window) {
-            if (window.Keyboard[Key.Escape]) {
-                window.Exit();
-            }
-
             if (window.Keyboard[Key.Left]) {
                 playerAngle -= playerTurnSpeed;
             }
@@ -93,20 +89,16 @@ namespace Labyrinth {
         }
 
         public override void OnRenderFrame(GameWindow window) {
-            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, window.Width / (float)window.Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
-            GL.MatrixMode(MatrixMode.Projection);
-            GL.LoadMatrix(ref projection);
-            
-            GL.ClearColor(Color4.Black);
-            GL.Color4(Color4.Transparent);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Light0);
-            GL.Enable(EnableCap.Light1);
 
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			
+            GL.Color4(Color4.Transparent);
+
+            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, window.Width / (float)window.Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadMatrix(ref projection);
+
             var modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitY, Vector3.UnitZ);
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref modelview);
@@ -121,10 +113,12 @@ namespace Labyrinth {
 			torchLight = Math.Max(torchLight, torchLightMin);
 			torchLight = Math.Min(torchLight, torchLightMax);
 
+            GL.Enable(EnableCap.Light0);
             GL.Light(LightName.Light0, LightParameter.Position, torchPosition);
             GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, (-torchLight / 3f + 10.3333f) / 100f);
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
 
+            GL.Enable(EnableCap.Light1);
             GL.Light(LightName.Light1, LightParameter.Position, new Vector4(map.FinishPosition.X + 0.5f, map.FinishPosition.Y + 0.5f, wallsHeight * 100, 1));
             GL.Light(LightName.Light1, LightParameter.Diffuse, Color4.White);
             GL.Light(LightName.Light1, LightParameter.Specular, Color4.White);

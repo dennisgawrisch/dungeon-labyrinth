@@ -2,6 +2,7 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 
 namespace Labyrinth {
     class Program : GameWindow {
@@ -12,7 +13,9 @@ namespace Labyrinth {
             }
         }
 
+        Menu menu;
         Game game;
+        bool menuIsActive;
 
         public Program()
             : base(800, 600, GraphicsMode.Default, "Labyrinth") {
@@ -22,7 +25,9 @@ namespace Labyrinth {
         protected override void OnLoad(EventArgs e) {
             base.OnLoad(e);
 
+            menu = new Menu();
             game = new Game();
+            menuIsActive = true;
         }
 
         protected override void OnResize(EventArgs e) {
@@ -33,13 +38,31 @@ namespace Labyrinth {
         protected override void OnUpdateFrame(FrameEventArgs e) {
             base.OnUpdateFrame(e);
 
+            if (Keyboard[Key.Escape]) {
+                if (menuIsActive) {
+                    menuIsActive = false;
+                    // TODO check if game is null
+                } else {
+                    menuIsActive = true;
+                }
+            }
+
             game.OnUpdateFrame(this);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e) {
             base.OnRenderFrame(e);
 
-            game.OnRenderFrame(this);
+            GL.ClearColor(Color4.Black);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+            if (game != null) {
+                game.OnRenderFrame(this);
+            }
+
+            if (menuIsActive) {
+                menu.OnRenderFrame(this);
+            }
 
             SwapBuffers();
         }
