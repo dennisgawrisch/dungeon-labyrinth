@@ -8,60 +8,60 @@ namespace Labyrinth {
     class Program : GameWindow {
         [STAThread]
         static void Main() {
-            using (var program = new Program()) {
-                program.Run(30);
+            using (var Program = new Program()) {
+                Program.Run(30);
             }
         }
 
-        Menu menu;
-        Game game;
-        bool menuIsActive;
+        Menu Menu;
+        Game Game;
+        bool MenuIsActive;
 
         public Program()
             : base(800, 600, GraphicsMode.Default, "Labyrinth") {
             VSync = VSyncMode.On;
         }
 
-        protected override void OnLoad(EventArgs e) {
-            base.OnLoad(e);
+        protected override void OnLoad(EventArgs E) {
+            base.OnLoad(E);
 
-            menu = new Menu();
-            game = new Game();
-            menuIsActive = false;
+            Menu = new Menu(); Menu.Window = this;
+            Game = new Game(); Game.Window = this;
+            MenuIsActive = false;
         }
 
-        protected override void OnResize(EventArgs e) {
-            base.OnResize(e);
+        protected override void OnResize(EventArgs E) {
+            base.OnResize(E);
             GL.Viewport(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height);
         }
 
-        protected override void OnUpdateFrame(FrameEventArgs e) {
-            base.OnUpdateFrame(e);
+        protected override void OnUpdateFrame(FrameEventArgs E) {
+            base.OnUpdateFrame(E);
 
             if (Keyboard[Key.Escape]) {
-                if (menuIsActive) {
-                    menuIsActive = false;
+                if (MenuIsActive) {
+                    MenuIsActive = false;
                     // TODO check if game is null
                 } else {
-                    menuIsActive = true;
+                    MenuIsActive = true;
                 }
             }
 
-            game.OnUpdateFrame(this);
+            Game.Tick();
         }
 
-        protected override void OnRenderFrame(FrameEventArgs e) {
-            base.OnRenderFrame(e);
+        protected override void OnRenderFrame(FrameEventArgs E) {
+            base.OnRenderFrame(E);
 
             GL.ClearColor(Color4.Black);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            if (game != null) {
-                game.OnRenderFrame(this);
+            if (Game != null) {
+                Game.Render();
             }
 
-            if (menuIsActive) {
-                menu.OnRenderFrame(this);
+            if (MenuIsActive) {
+                Menu.Render();
             }
 
             SwapBuffers();

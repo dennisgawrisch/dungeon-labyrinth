@@ -9,135 +9,127 @@ namespace Labyrinth {
             Wall
         };
 
-        protected Random rand;
-        protected CellType[,] cells;
-        protected Vector2 startPosition;
-        protected Vector2 finishPosition;
+        protected Random Rand;
+        protected CellType[,] Cells;
+        public Vector2 StartPosition { get; protected set; }
+        public Vector2 FinishPosition { get; protected set; }
 
         public Map(int Width, int Height) {
-            rand = new Random();
+            Rand = new Random();
 
-            cells = new CellType[Width, Height];
+            Cells = new CellType[Width, Height];
 
-			var maxMovementTries = 15;
-			var directionChangePossibility = 50;
-            var minPathToFinish = Math.Sqrt(Width * Height);
-            var loopChancePerMille = 10;
+			var MaxMovementTries = 15;
+			var DirectionChangePossibility = 50;
+            var MinPathToFinish = Math.Sqrt(Width * Height);
+            var LoopChancePerMille = 10;
 
-            var possibleFinishPositions = new List<Vector2>(Width * Height);
+            var PossibleFinishPositions = new List<Vector2>(Width * Height);
 
             do {
-                for (var x = 0; x < Width; x++) {
-                    for (var y = 0; y < Height; y++) {
-                          cells[x, y] = CellType.Wall;
+                for (var X = 0; X < Width; X++) {
+                    for (var Y = 0; Y < Height; Y++) {
+                          Cells[X, Y] = CellType.Wall;
                     }
                 }
 
-                startPosition = RandomPosition();
-                possibleFinishPositions.Clear();
+                StartPosition = RandomPosition();
+                PossibleFinishPositions.Clear();
 
-    			var position = startPosition;
-    			var positionsStack = new Stack<Vector2>(Width * Height);
-    			positionsStack.Push(position);
-    			var direction = Vector2.UnitY;
+    			var Position = StartPosition;
+    			var PositionsStack = new Stack<Vector2>(Width * Height);
+    			PositionsStack.Push(Position);
+    			var Direction = Vector2.UnitY;
 
     			do {
-    				SetCell(position, CellType.Empty);
+    				SetCell(Position, CellType.Empty);
     
-    				var success = false;
-    				for (var tries = 0; !success && (tries < maxMovementTries); tries++) {
-    					var directionChange = rand.Next(-200, +200);
-    					if (directionChange < directionChangePossibility - 200) {
-    						direction = direction.PerpendicularLeft;
-    					} else if (directionChange > 200 - directionChangePossibility) {
-    						direction = direction.PerpendicularRight;
+    				var Success = false;
+    				for (var Tries = 0; !Success && (Tries < MaxMovementTries); Tries++) {
+    					var DirectionChange = Rand.Next(-200, +200);
+    					if (DirectionChange < DirectionChangePossibility - 200) {
+    						Direction = Direction.PerpendicularLeft;
+    					} else if (DirectionChange > 200 - DirectionChangePossibility) {
+    						Direction = Direction.PerpendicularRight;
     					}
     
-    					var next = Vector2.Add(position, direction);
-    					var leftToNext = Vector2.Add(next, direction.PerpendicularLeft);
-    					var rightToNext = Vector2.Add(next, direction.PerpendicularRight);
-    					var nextNext = Vector2.Add(next, direction);
-    					var leftToNextNext = Vector2.Add(nextNext, direction.PerpendicularLeft);
-    					var rightToNextNext = Vector2.Add(nextNext, direction.PerpendicularRight);
+    					var Next = Vector2.Add(Position, Direction);
+    					var LeftToNext = Vector2.Add(Next, Direction.PerpendicularLeft);
+    					var RightToNext = Vector2.Add(Next, Direction.PerpendicularRight);
+    					var NextNext = Vector2.Add(Next, Direction);
+    					var LeftToNextNext = Vector2.Add(NextNext, Direction.PerpendicularLeft);
+    					var RightToNextNext = Vector2.Add(NextNext, Direction.PerpendicularRight);
 
-                        var withMapBounds = (
-                            (0 <= next.X) && (next.X < Width)
-                            && (0 <= next.Y) && (next.Y < Height)
+                        var WithMapBounds = (
+                            (0 <= Next.X) && (Next.X < Width)
+                            && (0 <= Next.Y) && (Next.Y < Height)
                         );
-                        var nextIsWall = (
-                            (CellType.Wall == GetCell(next))
-                            && (CellType.Wall == GetCell(leftToNext))
-                            && (CellType.Wall == GetCell(rightToNext))
+                        var NextIsWall = (
+                            (CellType.Wall == GetCell(Next))
+                            && (CellType.Wall == GetCell(LeftToNext))
+                            && (CellType.Wall == GetCell(RightToNext))
                         );
-                        var nextNextIsWall = (
-                            (CellType.Wall == GetCell(nextNext))
-                            && (CellType.Wall == GetCell(leftToNextNext))
-                            && (CellType.Wall == GetCell(rightToNextNext))
+                        var NextNextIsWall = (
+                            (CellType.Wall == GetCell(NextNext))
+                            && (CellType.Wall == GetCell(LeftToNextNext))
+                            && (CellType.Wall == GetCell(RightToNextNext))
                         );
 
     					if (
-    					    withMapBounds
-                            && nextIsWall
-                            && ((rand.Next(0, 1000) < loopChancePerMille) || nextNextIsWall)
+    					    WithMapBounds
+                            && NextIsWall
+                            && ((Rand.Next(0, 1000) < LoopChancePerMille) || NextNextIsWall)
     					) {
-    						position = next;
-    						success = true;
+    						Position = Next;
+    						Success = true;
     					}
     				}
     
-    				if (success) {
-    					positionsStack.Push(position);
+    				if (Success) {
+    					PositionsStack.Push(Position);
     				} else {
-    					if (positionsStack.Count > minPathToFinish) {
-    						possibleFinishPositions.Add(position);
+    					if (PositionsStack.Count > MinPathToFinish) {
+    						PossibleFinishPositions.Add(Position);
     					}
     
-    					position = positionsStack.Pop();
+    					Position = PositionsStack.Pop();
     				}
-    			} while (positionsStack.Count > 0);
-            } while (0 == possibleFinishPositions.Count);
+    			} while (PositionsStack.Count > 0);
+            } while (0 == PossibleFinishPositions.Count);
 
-            finishPosition = possibleFinishPositions[rand.Next(0, possibleFinishPositions.Count)];
+            FinishPosition = PossibleFinishPositions[Rand.Next(0, PossibleFinishPositions.Count)];
         }
 
         public int Width {
-            get { return cells.GetLength(0); }
+            get { return Cells.GetLength(0); }
         }
 
         public int Height {
-            get { return cells.GetLength(1); }
+            get { return Cells.GetLength(1); }
         }
 
-        public Vector2 StartPosition {
-            get { return startPosition; }
-        }
-
-        public Vector2 FinishPosition {
-            get { return finishPosition; }
-        }
-
-        public CellType GetCell(int x, int y) {
-            if ((x < 0) || (x >= Width) || (y < 0) || (y >= Height)) {
+        public CellType GetCell(int X, int Y) {
+            if ((X < 0) || (X >= Width) || (Y < 0) || (Y >= Height)) {
                 return CellType.Wall;
             } else {
-                return cells[x, y];
+                return Cells[X, Y];
             }
         }
 
-        public CellType GetCell(Vector2 position) {
-            return GetCell((int)(Math.Floor(position.X)), (int)(Math.Floor(position.Y)));
+        public CellType GetCell(Vector2 Position) {
+            return GetCell((int)(Math.Floor(Position.X)), (int)(Math.Floor(Position.Y)));
         }
 
-        protected void SetCell(int x, int y, CellType cellType) {
-            cells[x, y] = cellType;
+        protected void SetCell(int X, int Y, CellType cellType) {
+            Cells[X, Y] = cellType;
         }
 
-        protected void SetCell(Vector2 position, CellType cellType) {
-            SetCell((int)(Math.Floor(position.X)), (int)(Math.Floor(position.Y)), cellType);
+        protected void SetCell(Vector2 Position, CellType cellType) {
+            SetCell((int)(Math.Floor(Position.X)), (int)(Math.Floor(Position.Y)), cellType);
         }
 
         protected Vector2 RandomPosition() {
-            return new Vector2(rand.Next(0, Width), rand.Next(0, Height));
+            return new Vector2(Rand.Next(0, Width), Rand.Next(0, Height));
         }
     }
 }
