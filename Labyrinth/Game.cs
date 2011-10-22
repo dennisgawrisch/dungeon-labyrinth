@@ -29,7 +29,7 @@ namespace Labyrinth {
 
             textureWall = LoadTexture("../../textures/wall.png");
 
-            map = new Map(10, 10); // TODO parametrize
+            map = new Map(3, 3); // TODO parametrize
 
             playerPosition = new Vector3(map.StartPosition.X + 0.5f, map.StartPosition.Y + 0.5f, 0.5f);
 
@@ -88,9 +88,6 @@ namespace Labyrinth {
 
         public override void OnRenderFrame(GameWindow window) {
             GL.Enable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.Texture2D);
-            GL.Enable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Fog);
 
             GL.Color4(Color4.Transparent);
 
@@ -119,6 +116,7 @@ namespace Labyrinth {
                 torchLightChangeDirection = -torchLightChangeDirection;
             }
 
+            GL.Enable(EnableCap.Lighting);
             GL.Enable(EnableCap.Light0);
             GL.Light(LightName.Light0, LightParameter.Position, torchPosition);
             GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, torchLight);
@@ -126,6 +124,7 @@ namespace Labyrinth {
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
             GL.Light(LightName.Light0, LightParameter.Specular, Color4.SaddleBrown);
 
+            GL.Enable(EnableCap.Fog);
             GL.Fog(FogParameter.FogDensity, 0.5f);
 
             for (var x = 0; x < map.Width; x++) {
@@ -147,10 +146,10 @@ namespace Labyrinth {
                         }
 
                         RenderFloor(position);
+                        RenderCeiling(position);
+
                         if (map.FinishPosition.Equals(position)) {
                             RenderExit(position);
-                        } else {
-                            RenderCeiling(position);
                         }
                     }
                 }
@@ -174,6 +173,7 @@ namespace Labyrinth {
         }
 
         private void RenderWall(Vector2 A, Vector2 B, float z) {
+            GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, textureWall);
 
             GL.Begin(BeginMode.Quads);
@@ -189,6 +189,7 @@ namespace Labyrinth {
         }
 
         private void RenderFloor(Vector2 position) {
+            GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, textureWall);
 
             GL.Begin(BeginMode.Quads);
@@ -200,6 +201,7 @@ namespace Labyrinth {
         }
 
         private void RenderCeiling(Vector2 position) {
+            GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, textureWall);
 
             GL.Begin(BeginMode.Quads);
@@ -211,30 +213,32 @@ namespace Labyrinth {
         }
 
         private void RenderExit(Vector2 position) {
-            RenderWall(new Vector2(position.X, position.Y + 1), new Vector2(position.X + 1, position.Y + 1), wallsHeight);
-            RenderWall(new Vector2(position.X + 1, position.Y), new Vector2(position.X, position.Y), wallsHeight);
-            RenderWall(new Vector2(position.X, position.Y), new Vector2(position.X, position.Y + 1), wallsHeight);
-            RenderWall(new Vector2(position.X + 1, position.Y + 1), new Vector2(position.X + 1, position.Y), wallsHeight);
-
-            var ropeWidth = 0.01;
+            var portalWidth = 0.7f;
 
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
-            GL.Color4(Color4.ForestGreen);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            var color = Color4.ForestGreen;
+            color.A = 0.3f;
+            GL.Color4(color);
+
             GL.Begin(BeginMode.QuadStrip);
-            GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, 0.3);
-            GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, wallsHeight * 2);
-            GL.Vertex3(position.X + 0.5 + ropeWidth, position.Y + 0.5 - ropeWidth, 0.3);
-            GL.Vertex3(position.X + 0.5 + ropeWidth, position.Y + 0.5 - ropeWidth, wallsHeight * 2);
-            GL.Vertex3(position.X + 0.5 + ropeWidth, position.Y + 0.5 + ropeWidth, 0.3);
-            GL.Vertex3(position.X + 0.5 + ropeWidth, position.Y + 0.5 + ropeWidth, wallsHeight * 2);
-            GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 + ropeWidth, 0.3);
-            GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 + ropeWidth, wallsHeight * 2);
-            GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, 0.3);
-            GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, wallsHeight * 2);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, wallsHeight);
+            GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 - portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 - portalWidth / 2, wallsHeight);
+            GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, wallsHeight);
             GL.End();
-            GL.Enable(EnableCap.Texture2D);
+
             GL.Enable(EnableCap.Lighting);
+            GL.Disable(EnableCap.Blend);
        }
     }
 }
