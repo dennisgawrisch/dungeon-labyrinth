@@ -36,7 +36,7 @@ namespace Labyrinth {
 
             textureWall = LoadTexture("../../textures/wall.png");
 
-            map = new Map(30, 30); // TODO parametrize
+            map = new Map(40, 20); // TODO parametrize
 
             playerPosition = new Vector3(map.StartPosition.X + 0.5f, map.StartPosition.Y + 0.5f, 0.5f);
 
@@ -304,7 +304,7 @@ namespace Labyrinth {
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            GL.Translate(playerPosition.X, playerPosition.Y, wallsHeight * 2);
+            GL.Translate(playerPosition.X, playerPosition.Y, wallsHeight / 2);
             GL.Rotate(-playerAngle, Vector3.UnitZ);
 
             GL.Color4(1.0f, 0, 0, 0.7f);
