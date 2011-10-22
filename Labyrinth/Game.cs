@@ -21,10 +21,8 @@ namespace Labyrinth {
 
         private int textureWall;
 
-		private float torchLightMin = 0;
-		private float torchLightMax = 10;
-        private float torchLight = 5;
-        private float torchLightMaxChange = 1f;
+        private float torchLight = 0;
+        private float torchLightChangeDirection = +1;
 
         public Game() {
 			rand = new Random();
@@ -92,6 +90,7 @@ namespace Labyrinth {
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.Texture2D);
             GL.Enable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Fog);
 
             GL.Color4(Color4.Transparent);
 
@@ -109,22 +108,25 @@ namespace Labyrinth {
             var torchPosition = new Vector4(playerPosition);
             torchPosition.W = 1;
 
-			torchLight += (rand.Next(-100, +100) / 100f) * torchLightMaxChange;
-			torchLight = Math.Max(torchLight, torchLightMin);
-			torchLight = Math.Min(torchLight, torchLightMax);
+            var torchLightMin = 0.10f;
+            var torchLightMax = 0.20f;
+            var torchLightChangeSpeed = 0.007f;
+
+            torchLight += rand.Next(-100, +100) / 100f * torchLightChangeSpeed * torchLightChangeDirection;
+            torchLight = Math.Max(torchLight, torchLightMin);
+            torchLight = Math.Min(torchLight, torchLightMax);
+            if ((torchLightMin == torchLight) || (torchLightMax == torchLight) || (rand.Next(100) < 30)) {
+                torchLightChangeDirection = -torchLightChangeDirection;
+            }
 
             GL.Enable(EnableCap.Light0);
             GL.Light(LightName.Light0, LightParameter.Position, torchPosition);
-            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, (-torchLight / 3f + 10.3333f) / 100f);
+            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, torchLight);
+            GL.Light(LightName.Light0, LightParameter.Ambient, Color4.SaddleBrown);
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
+            GL.Light(LightName.Light0, LightParameter.Specular, Color4.SaddleBrown);
 
-            GL.Enable(EnableCap.Light1);
-            GL.Light(LightName.Light1, LightParameter.Position, new Vector4(map.FinishPosition.X + 0.5f, map.FinishPosition.Y + 0.5f, wallsHeight * 100, 1));
-            GL.Light(LightName.Light1, LightParameter.Diffuse, Color4.White);
-            GL.Light(LightName.Light1, LightParameter.Specular, Color4.White);
-            GL.Light(LightName.Light1, LightParameter.ConstantAttenuation, 0f);
-            GL.Light(LightName.Light1, LightParameter.SpotDirection, new Vector4(0, 0, -1, 0));
-            GL.Light(LightName.Light1, LightParameter.SpotCutoff, 1);
+            GL.Fog(FogParameter.FogDensity, 0.5f);
 
             for (var x = 0; x < map.Width; x++) {
                 for (var y = 0; y < map.Height; y++) {

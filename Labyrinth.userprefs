@@ -2,11 +2,11 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Labyrinth/Program.cs">
     <Files>
-      <File FileName="Labyrinth/Program.cs" Line="47" Column="15" />
-      <File FileName="Labyrinth/Menu.cs" Line="25" Column="1" />
-      <File FileName="Labyrinth/Game.cs" Line="111" Column="21" />
+      <File FileName="Labyrinth/Program.cs" Line="34" Column="30" />
+      <File FileName="Labyrinth/Menu.cs" Line="1" Column="1" />
       <File FileName="Labyrinth/Map.cs" Line="1" Column="1" />
-      <File FileName="Labyrinth/GameWindowLayer.cs" Line="5" Column="18" />
+      <File FileName="Labyrinth/Game.cs" Line="1" Column="1" />
+      <File FileName="Labyrinth/GameWindowLayer.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

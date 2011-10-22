@@ -27,7 +27,7 @@ namespace Labyrinth {
 
             menu = new Menu();
             game = new Game();
-            menuIsActive = true;
+            menuIsActive = false;
         }
 
         protected override void OnResize(EventArgs e) {
