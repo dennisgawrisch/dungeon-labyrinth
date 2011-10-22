@@ -10,6 +10,13 @@ namespace Labyrinth {
     class Game : GameWindowLayer {
 		private Random rand;
 
+        public enum CameraMode {
+            FirstPerson,
+            ThirdPerson,
+            BirdEye
+        };
+        private CameraMode cameraMode = CameraMode.FirstPerson;
+
         private Map map;
         private Vector3 playerPosition;
         private float playerAngle; // in degrees, 0 = Y↑, 90 = X→
@@ -44,6 +51,16 @@ namespace Labyrinth {
         }
 
         public override void OnUpdateFrame(GameWindow window) {
+            if (window.Keyboard[Key.C]) {
+                if (CameraMode.FirstPerson == cameraMode) {
+                    cameraMode = CameraMode.ThirdPerson;
+                } else if (CameraMode.ThirdPerson == cameraMode) {
+                    cameraMode = CameraMode.BirdEye;
+                } else {
+                    cameraMode = CameraMode.FirstPerson;
+                }
+            }
+
             if (window.Keyboard[Key.Left]) {
                 playerAngle -= playerTurnSpeed;
             }
@@ -89,9 +106,7 @@ namespace Labyrinth {
         public override void OnRenderFrame(GameWindow window) {
             GL.Enable(EnableCap.DepthTest);
 
-            GL.Color4(Color4.Transparent);
-
-            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, window.Width / (float)window.Height, 0.00001f, Math.Max(map.Width, map.Height) * 2f);
+            var projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, window.Width / (float)window.Height, 1e-3f, Math.Max(Math.Max(map.Width, map.Height), wallsHeight * 10) * 2f);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref projection);
 
@@ -99,8 +114,18 @@ namespace Labyrinth {
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref modelview);
 
+            if ((CameraMode.ThirdPerson == cameraMode) || (CameraMode.BirdEye == cameraMode)) {
+                GL.Rotate(90, Vector3.UnitX);
+            }
+
             GL.Rotate(playerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(playerPosition, -1f));
+
+            if (CameraMode.ThirdPerson == cameraMode) {
+                GL.Translate(0, 0, -wallsHeight * 5);
+            } else if (CameraMode.BirdEye == cameraMode) {
+                GL.Translate(0, 0, -wallsHeight * Math.Max(map.Width, map.Height) * 2f);
+            }
 
             var torchPosition = new Vector4(playerPosition);
             torchPosition.W = 1;
@@ -124,8 +149,12 @@ namespace Labyrinth {
             GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
             GL.Light(LightName.Light0, LightParameter.Specular, Color4.SaddleBrown);
 
-            GL.Enable(EnableCap.Fog);
-            GL.Fog(FogParameter.FogDensity, 0.5f);
+            if (CameraMode.BirdEye != cameraMode) {
+                GL.Enable(EnableCap.Fog);
+                GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != cameraMode) ? 0.5f : 0.1f);
+            } else {
+                GL.Disable(EnableCap.Fog);
+            }
 
             for (var x = 0; x < map.Width; x++) {
                 for (var y = 0; y < map.Height; y++) {
@@ -146,13 +175,19 @@ namespace Labyrinth {
                         }
 
                         RenderFloor(position);
-                        RenderCeiling(position);
+                        if ((CameraMode.ThirdPerson != cameraMode) && (CameraMode.BirdEye != cameraMode)) {
+                            RenderCeiling(position);
+                        }
 
                         if (map.FinishPosition.Equals(position)) {
                             RenderExit(position);
                         }
                     }
                 }
+            }
+
+            if ((CameraMode.ThirdPerson == cameraMode) || (CameraMode.BirdEye == cameraMode)) {
+                RenderPlayer();
             }
         }
 
@@ -220,9 +255,7 @@ namespace Labyrinth {
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            var color = Color4.ForestGreen;
-            color.A = 0.3f;
-            GL.Color4(color);
+            GL.Color4(0, 1, 0, 0.3f);
 
             GL.Begin(BeginMode.QuadStrip);
             GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, 0);
@@ -241,6 +274,32 @@ namespace Labyrinth {
             GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
             GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
             GL.End();
+
+            GL.Enable(EnableCap.Lighting);
+            GL.Disable(EnableCap.Blend);
+       }
+
+       private void RenderPlayer() {
+            var triangleSize = 0.3f;
+
+            GL.Disable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            GL.Translate(playerPosition.X, playerPosition.Y, wallsHeight * 2);
+            GL.Rotate(-playerAngle, Vector3.UnitZ);
+
+            GL.Color4(1.0f, 0, 0, 0.7f);
+
+            GL.Begin(BeginMode.Triangles);
+            GL.Vertex2(0, 0);
+            GL.Vertex2(triangleSize / 2, -triangleSize);
+            GL.Vertex2(-triangleSize / 2, -triangleSize);
+            GL.End();
+
+            GL.Rotate(playerAngle, Vector3.UnitZ);
+            GL.Translate(-playerPosition.X, -playerPosition.Y, -wallsHeight / 2);
 
             GL.Enable(EnableCap.Lighting);
             GL.Disable(EnableCap.Blend);
