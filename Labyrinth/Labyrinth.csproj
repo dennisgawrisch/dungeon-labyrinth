@@ -40,6 +40,7 @@
     <Compile Include="Game.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="Menu.cs" />
+    <Compile Include="MainCompositeLayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

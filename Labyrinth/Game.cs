@@ -51,16 +51,6 @@ namespace Labyrinth {
         }
 
         public override void Tick() {
-            if (Window.Keyboard[Key.C]) {
-                if (CameraMode.FirstPerson == Camera) {
-                    Camera = CameraMode.ThirdPerson;
-                } else if (CameraMode.ThirdPerson == Camera) {
-                    Camera = CameraMode.BirdEye;
-                } else {
-                    Camera = CameraMode.FirstPerson;
-                }
-            }
-
             if (Window.Keyboard[Key.Left]) {
                 PlayerAngle -= PlayerTurnSpeed;
             }
@@ -100,6 +90,18 @@ namespace Labyrinth {
 
             if (((int)(Math.Floor(PlayerPosition.X)) == Map.FinishPosition.X) && ((int)(Math.Floor(PlayerPosition.Y)) == Map.FinishPosition.Y)) {
                 Window.Exit(); // TODO
+            }
+        }
+
+        public override void OnKeyPress(Key Key) {
+            if (Key.Equals(OpenTK.Input.Key.C)) {
+                if (CameraMode.FirstPerson == Camera) {
+                    Camera = CameraMode.ThirdPerson;
+                } else if (CameraMode.ThirdPerson == Camera) {
+                    Camera = CameraMode.BirdEye;
+                } else {
+                    Camera = CameraMode.FirstPerson;
+                }
             }
         }
 

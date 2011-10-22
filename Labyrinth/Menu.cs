@@ -1,6 +1,3 @@
-using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -9,9 +6,6 @@ using OpenTK.Input;
 namespace Labyrinth {
     class Menu : GameWindowLayer {
         public Menu() {
-        }
-
-        public override void Tick() {
         }
 
         public override void Render() {
@@ -64,6 +58,9 @@ namespace Labyrinth {
             GL.Vertex2(Window.Width, Window.Height);
             GL.Vertex2(Window.Width - 10, Window.Height);
             GL.End();
+        }
+
+        public virtual void OnKeyPress(Key Key) {
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -13,9 +14,10 @@ namespace Labyrinth {
             }
         }
 
-        Menu Menu;
-        Game Game;
-        bool MenuIsActive;
+        private GameWindowLayer Layer;
+
+        private Array Keys;
+        private HashSet<Key> PressedKeys = new HashSet<Key>();
 
         public Program()
             : base(800, 600, GraphicsMode.Default, "Labyrinth") {
@@ -24,10 +26,8 @@ namespace Labyrinth {
 
         protected override void OnLoad(EventArgs E) {
             base.OnLoad(E);
-
-            Menu = new Menu(); Menu.Window = this;
-            Game = new Game(); Game.Window = this;
-            MenuIsActive = false;
+            Layer = new MainCompositeLayer(this);
+            Keys = Enum.GetValues(typeof(OpenTK.Input.Key));
         }
 
         protected override void OnResize(EventArgs E) {
@@ -37,17 +37,16 @@ namespace Labyrinth {
 
         protected override void OnUpdateFrame(FrameEventArgs E) {
             base.OnUpdateFrame(E);
+            Layer.Tick();
 
-            if (Keyboard[Key.Escape]) {
-                if (MenuIsActive) {
-                    MenuIsActive = false;
-                    // TODO check if game is null
-                } else {
-                    MenuIsActive = true;
+            foreach (OpenTK.Input.Key Key in Keys) {
+                if (Keyboard[Key]) {
+                    PressedKeys.Add(Key);
+                } else if (PressedKeys.Contains(Key)) {
+                    PressedKeys.Remove(Key);
+                    Layer.OnKeyPress(Key);
                 }
             }
-
-            Game.Tick();
         }
 
         protected override void OnRenderFrame(FrameEventArgs E) {
@@ -56,13 +55,7 @@ namespace Labyrinth {
             GL.ClearColor(Color4.Black);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            if (Game != null) {
-                Game.Render();
-            }
-
-            if (MenuIsActive) {
-                Menu.Render();
-            }
+            Layer.Render();
 
             SwapBuffers();
         }
