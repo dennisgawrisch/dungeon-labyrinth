@@ -32,7 +32,7 @@ namespace Labyrinth {
         }
 
         public override void OnKeyPress(Key K) {
-            if (K.Equals(Key.Enter) && (Window.Keyboard[Key.AltLeft] || Window.Keyboard[Key.AltRight])) {
+            if ((K.Equals(Key.Enter) && (Window.Keyboard[Key.AltLeft] || Window.Keyboard[Key.AltRight])) || K.Equals(Key.F11)) {
                 if (WindowState.Fullscreen != Window.WindowState) {
                     Window.WindowState = WindowState.Fullscreen;
                 } else {
