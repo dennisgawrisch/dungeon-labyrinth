@@ -60,7 +60,7 @@ namespace Labyrinth {
             GL.End();
         }
 
-        public virtual void OnKeyPress(Key Key) {
+        public virtual void OnKeyPress(Key K) {
         }
     }
 }

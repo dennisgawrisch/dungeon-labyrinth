@@ -11,7 +11,7 @@ namespace Labyrinth {
         public virtual void Render() {
         }
 
-        public virtual void OnKeyPress(Key Key) {
+        public virtual void OnKeyPress(Key K) {
         }
     }
 }
