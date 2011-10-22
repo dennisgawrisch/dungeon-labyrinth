@@ -231,10 +231,15 @@ namespace Labyrinth {
             GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 - portalWidth / 2, wallsHeight);
             GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
             GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
-            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
-            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
+            GL.End();
+
+            GL.Begin(BeginMode.QuadStrip);
             GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, 0);
             GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 - portalWidth / 2, wallsHeight);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 - portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
+            GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, 0);
+            GL.Vertex3(position.X + 0.5 + portalWidth / 2, position.Y + 0.5 + portalWidth / 2, wallsHeight);
             GL.End();
 
             GL.Enable(EnableCap.Lighting);
