@@ -218,6 +218,9 @@ namespace Labyrinth {
 
             var ropeWidth = 0.01;
 
+            GL.Disable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.Lighting);
+            GL.Color4(Color4.ForestGreen);
             GL.Begin(BeginMode.QuadStrip);
             GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, 0.3);
             GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, wallsHeight * 2);
@@ -230,6 +233,8 @@ namespace Labyrinth {
             GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, 0.3);
             GL.Vertex3(position.X + 0.5 - ropeWidth, position.Y + 0.5 - ropeWidth, wallsHeight * 2);
             GL.End();
-        }
+            GL.Enable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Lighting);
+       }
     }
 }
