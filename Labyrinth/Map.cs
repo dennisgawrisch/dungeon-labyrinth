@@ -22,6 +22,7 @@ namespace Labyrinth {
 			var maxMovementTries = 15;
 			var directionChangePossibility = 50;
             var minPathToFinish = Math.Sqrt(Width * Height);
+            var loopChancePerMille = 10;
 
             var possibleFinishPositions = new List<Vector2>(Width * Height);
 
@@ -58,16 +59,26 @@ namespace Labyrinth {
     					var nextNext = Vector2.Add(next, direction);
     					var leftToNextNext = Vector2.Add(nextNext, direction.PerpendicularLeft);
     					var rightToNextNext = Vector2.Add(nextNext, direction.PerpendicularRight);
-    
+
+                        var withMapBounds = (
+                            (0 <= next.X) && (next.X < Width)
+                            && (0 <= next.Y) && (next.Y < Height)
+                        );
+                        var nextIsWall = (
+                            (CellType.Wall == GetCell(next))
+                            && (CellType.Wall == GetCell(leftToNext))
+                            && (CellType.Wall == GetCell(rightToNext))
+                        );
+                        var nextNextIsWall = (
+                            (CellType.Wall == GetCell(nextNext))
+                            && (CellType.Wall == GetCell(leftToNextNext))
+                            && (CellType.Wall == GetCell(rightToNextNext))
+                        );
+
     					if (
-    					    (0 <= next.X) && (next.X < Width)
-    					    && (0 <= next.Y) && (next.Y < Height)
-    					    && (CellType.Wall == GetCell(next))
-    					    && (CellType.Wall == GetCell(leftToNext))
-    					    && (CellType.Wall == GetCell(rightToNext))
-    					    && (CellType.Wall == GetCell(nextNext))
-    					    && (CellType.Wall == GetCell(leftToNextNext))
-    					    && (CellType.Wall == GetCell(rightToNextNext))
+    					    withMapBounds
+                            && nextIsWall
+                            && ((rand.Next(0, 1000) < loopChancePerMille) || nextNextIsWall)
     					) {
     						position = next;
     						success = true;
