@@ -108,6 +108,8 @@ namespace Labyrinth {
         public override void Render() {
             GL.Enable(EnableCap.DepthTest);
 
+            GL.Color4(Color4.Transparent);
+
             var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, Math.Max(Math.Max(Map.Width, Map.Height), WallsHeight * 10) * 2f);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref Projection);
