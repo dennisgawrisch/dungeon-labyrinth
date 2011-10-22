@@ -31,8 +31,14 @@ namespace Labyrinth {
             }
         }
 
-        public override void OnKeyPress(Key Key) {
-            if (Key.Equals(OpenTK.Input.Key.Escape)) {
+        public override void OnKeyPress(Key K) {
+            if (K.Equals(Key.Enter) && (Window.Keyboard[Key.AltLeft] || Window.Keyboard[Key.AltRight])) {
+                if (WindowState.Fullscreen != Window.WindowState) {
+                    Window.WindowState = WindowState.Fullscreen;
+                } else {
+                    Window.WindowState = WindowState.Normal;
+                }
+            } else if (K.Equals(Key.Escape)) {
                 if (Game == null) {
                     Window.Exit();
                 } else {
@@ -40,9 +46,9 @@ namespace Labyrinth {
                 }
             } else {
                 if (MenuIsActive) {
-                    Menu.OnKeyPress(Key);
+                    Menu.OnKeyPress(K);
                 } else if (Game != null) {
-                    Game.OnKeyPress(Key);
+                    Game.OnKeyPress(K);
                 }
             }
         }

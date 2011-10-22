@@ -93,8 +93,8 @@ namespace Labyrinth {
             }
         }
 
-        public override void OnKeyPress(Key Key) {
-            if (Key.Equals(OpenTK.Input.Key.C)) {
+        public override void OnKeyPress(Key K) {
+            if (K.Equals(Key.C)) {
                 if (CameraMode.FirstPerson == Camera) {
                     Camera = CameraMode.ThirdPerson;
                 } else if (CameraMode.ThirdPerson == Camera) {

@@ -37,6 +37,7 @@ namespace Labyrinth {
 
         protected override void OnUpdateFrame(FrameEventArgs E) {
             base.OnUpdateFrame(E);
+
             Layer.Tick();
 
             foreach (OpenTK.Input.Key Key in Keys) {
