@@ -1,5 +1,6 @@
 using OpenTK;
 using OpenTK.Input;
+using OpenTK.Graphics.OpenGL;
 
 namespace Labyrinth {
     class MainCompositeLayer : GameWindowLayer {
@@ -24,10 +25,14 @@ namespace Labyrinth {
 
         public override void Render() {
             if (Game != null) {
+                GL.PushAttrib(AttribMask.AllAttribBits);
                 Game.Render();
+                GL.PopAttrib();
             }
             if (MenuIsActive) {
+                GL.PushAttrib(AttribMask.AllAttribBits);
                 Menu.Render();
+                GL.PopAttrib();
             }
         }
 
