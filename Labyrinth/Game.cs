@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
 using OpenTK;
@@ -27,6 +28,7 @@ namespace Labyrinth {
         private float WallsHeight = 0.7f;
 
         private int TextureWall;
+        private Hashtable DisplayLists = new Hashtable();
 
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
@@ -162,35 +164,7 @@ namespace Labyrinth {
                 GL.Disable(EnableCap.Fog);
             }
 
-            for (var X = 0; X < Map.Width; X++) {
-                for (var Y = 0; Y < Map.Height; Y++) {
-                    var Position = new Vector2(X, Y);
-
-                    if (Map.CellType.Empty == Map.GetCell(X, Y)) {
-                        if (Map.CellType.Wall == Map.GetCell(X, Y + 1)) {
-                            RenderWall(new Vector2(X, Y + 1), new Vector2(X + 1, Y + 1));
-                        }
-                        if (Map.CellType.Wall == Map.GetCell(X, Y - 1)) {
-                            RenderWall(new Vector2(X + 1, Y), new Vector2(X, Y));
-                        }
-                        if (Map.CellType.Wall == Map.GetCell(X - 1, Y)) {
-                            RenderWall(new Vector2(X, Y), new Vector2(X, Y + 1));
-                        }
-                        if (Map.CellType.Wall == Map.GetCell(X + 1, Y)) {
-                            RenderWall(new Vector2(X + 1, Y + 1), new Vector2(X + 1, Y));
-                        }
-
-                        RenderFloor(Position);
-                        if ((CameraMode.ThirdPerson != Camera) && (CameraMode.BirdEye != Camera)) {
-                            RenderCeiling(Position);
-                        }
-
-                        if (Map.FinishPosition.Equals(Position)) {
-                            RenderExit(Position);
-                        }
-                    }
-                }
-            }
+            RenderMap();
 
             if ((CameraMode.ThirdPerson == Camera) || (CameraMode.BirdEye == Camera)) {
                 RenderPlayer();
@@ -211,6 +185,45 @@ namespace Labyrinth {
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
 
             return Texture;
+        }
+
+        private void RenderMap() {
+            var DisplayListName = "map_" + Camera.GetHashCode();
+            if (!DisplayLists.ContainsKey(DisplayListName)) {
+                DisplayLists[DisplayListName] = GL.GenLists(1);
+                GL.NewList((int)DisplayLists[DisplayListName], ListMode.Compile);
+                for (var X = 0; X < Map.Width; X++) {
+                    for (var Y = 0; Y < Map.Height; Y++) {
+                        var Position = new Vector2(X, Y);
+
+                        if (Map.CellType.Empty == Map.GetCell(X, Y)) {
+                            if (Map.CellType.Wall == Map.GetCell(X, Y + 1)) {
+                                RenderWall(new Vector2(X, Y + 1), new Vector2(X + 1, Y + 1));
+                            }
+                            if (Map.CellType.Wall == Map.GetCell(X, Y - 1)) {
+                                RenderWall(new Vector2(X + 1, Y), new Vector2(X, Y));
+                            }
+                            if (Map.CellType.Wall == Map.GetCell(X - 1, Y)) {
+                                RenderWall(new Vector2(X, Y), new Vector2(X, Y + 1));
+                            }
+                            if (Map.CellType.Wall == Map.GetCell(X + 1, Y)) {
+                                RenderWall(new Vector2(X + 1, Y + 1), new Vector2(X + 1, Y));
+                            }
+
+                            RenderFloor(Position);
+                            if ((CameraMode.ThirdPerson != Camera) && (CameraMode.BirdEye != Camera)) {
+                                RenderCeiling(Position);
+                            }
+
+                            if (Map.FinishPosition.Equals(Position)) {
+                                RenderExit(Position);
+                            }
+                        }
+                    }
+                }
+                GL.EndList();
+            }
+            GL.CallList((int)DisplayLists[DisplayListName]);
         }
 
         private void RenderWall(Vector2 A, Vector2 B, float z) {
@@ -313,9 +326,10 @@ namespace Labyrinth {
 
             GL.Color4(1.0f, 0, 0, 0.7f);
 
-            GL.Begin(BeginMode.Triangles);
+            GL.Begin(BeginMode.Polygon);
             GL.Vertex2(0, 0);
             GL.Vertex2(TriangleSize / 2, -TriangleSize);
+            GL.Vertex2(0, -TriangleSize * 0.75);
             GL.Vertex2(-TriangleSize / 2, -TriangleSize);
             GL.End();
 
