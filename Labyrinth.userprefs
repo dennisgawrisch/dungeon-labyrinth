@@ -1,19 +1,18 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Labyrinth/Game.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Labyrinth/Menu/WindowLayer.cs">
     <Files>
-      <File FileName="Labyrinth/Program.cs" Line="1" Column="1" />
-      <File FileName="Labyrinth/GameWindowLayer.cs" Line="1" Column="1" />
-      <File FileName="Labyrinth/MainCompositeLayer.cs" Line="4" Column="1" />
-      <File FileName="Labyrinth/Menu.cs" Line="4" Column="1" />
-      <File FileName="Labyrinth/Game.cs" Line="314" Column="72" />
-      <File FileName="Labyrinth/Map.cs" Line="1" Column="1" />
+      <File FileName="../docs/menu.txt" Line="1" Column="1" />
+      <File FileName="Labyrinth/Menu/WindowLayer.cs" Line="13" Column="31" />
+      <File FileName="Labyrinth/Game.cs" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Labyrinth" expanded="True">
-            <Node name="Game.cs" selected="True" />
+            <Node name="Menu" expanded="True">
+              <Node name="WindowLayer.cs" selected="True" />
+            </Node>
           </Node>
         </State>
       </Pad>

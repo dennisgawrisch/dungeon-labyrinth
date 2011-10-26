@@ -3,13 +3,12 @@ using OpenTK.Input;
 
 namespace Labyrinth {
     abstract class GameWindowLayer {
-        public GameWindow Window { get; set; }
+        public GameWindow Window;
 
         public virtual void Tick() {
         }
 
-        public virtual void Render() {
-        }
+        public abstract void Render();
 
         public virtual void OnKeyPress(Key K) {
         }
