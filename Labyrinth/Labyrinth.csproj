@@ -42,8 +42,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="Map.cs" />
-    <Compile Include="Menu.cs" />
     <Compile Include="MainCompositeLayer.cs" />
+    <Compile Include="Menu\WindowLayer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -63,4 +63,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <Folder Include="Menu\" />
+  </ItemGroup>
 </Project>
