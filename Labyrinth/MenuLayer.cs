@@ -1,16 +1,16 @@
 using System;
-using System.Collections.Generic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using Labyrinth.Gui.Menu;
 
-namespace Labyrinth.Menu {
-    class WindowLayer : GameWindowLayer {
+namespace Labyrinth {
+    class MenuLayer : GameWindowLayer {
         protected Menu CurrentMenu, MainMenu;
         protected Button NewGame, Quit;
 
-        public WindowLayer() {
+        public MenuLayer() {
             MainMenu = new Menu();
 
             NewGame = new Button("New game");
@@ -84,89 +84,19 @@ namespace Labyrinth.Menu {
             GL.End();
             // end debug
 
-            CurrentMenu.Render(new Box2(0, 0, Window.Width, Window.Height));
+            CurrentMenu.ResetDimensions();
+
+            int MenuWidth = Math.Min(CurrentMenu.Width.Value, Window.Width - 50);
+            CurrentMenu.Left = (Window.Width - MenuWidth) / 2;
+            CurrentMenu.Right = Window.Width - CurrentMenu.Left.Value;
+            CurrentMenu.Top = 25; // TODO put logo on top
+            CurrentMenu.Bottom = Window.Height - 25;
+
+            CurrentMenu.Render();
         }
 
         public override void OnKeyPress(Key K) {
             CurrentMenu.OnKeyPress(K);
-        }
-    }
-
-    abstract class Element {
-        public abstract void Render(Box2 Box);
-
-        public virtual void OnKeyPress(Key K) {
-        }
-    }
-
-    class Menu : Element {
-        public List<Item> Items = new List<Item>();
-
-        public void Add(Item Item) {
-            Items.Add(Item);
-        }
-
-        public override void Render(Box2 Box) {
-            foreach (var Item in Items) {
-                Item.Render(Box);
-            }
-        }
-    }
-
-    abstract class Item : Element {
-    }
-
-    class Button : Item {
-        public bool Enabled = true;
-
-        public Button(string Label) {
-        }
-
-        public override void Render(Box2 Box) {
-            GL.PushAttrib(AttribMask.AllAttribBits);
-
-            GL.Color4(Color4.ForestGreen);
-            GL.Begin(BeginMode.Quads);
-            GL.Vertex2(Box.Left, Box.Top);
-            GL.Vertex2(Box.Right, Box.Top);
-            GL.Vertex2(Box.Right, Box.Bottom);
-            GL.Vertex2(Box.Left, Box.Bottom);
-            GL.End();
-
-            GL.PopAttrib();
-
-            // TODO
-
-            // TODO respect Enabled
-        }
-
-        public event EventHandler<EventArgs> Enter;
-
-        protected virtual void OnEnter(EventArgs E) {
-            if (Enter != null) {
-                Enter(this, E);
-            }
-        }
-
-        public override void OnKeyPress(Key K) {
-            if (Enabled && K.Equals(Key.Enter)) {
-                OnEnter(EventArgs.Empty);
-            }
-        }
-    }
-
-    class Text : Item {
-        public Text(string Label) {
-        }
-
-        public override void Render(Box2 Box) {
-            // TODO
-        }
-    }
-
-    class Input : Item {
-        public override void Render(Box2 Box) {
-            // TODO
         }
     }
 }
