@@ -28,7 +28,7 @@ namespace Labyrinth.Gui.Menu {
 
             GL.Color4(Color4.ForestGreen);
             GL.Begin(BeginMode.Quads);
-            GL.Vertex2(Left.Value , Top.Value);
+            GL.Vertex2(Left.Value, Top.Value);
             GL.Vertex2(Right.Value, Top.Value);
             GL.Vertex2(Right.Value, Bottom.Value);
             GL.Vertex2(Left.Value, Bottom.Value);
