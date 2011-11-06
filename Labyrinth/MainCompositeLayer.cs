@@ -4,13 +4,13 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Labyrinth {
     class MainCompositeLayer : GameWindowLayer {
-        protected Menu.WindowLayer Menu;
+        protected MenuLayer Menu;
         protected Game Game;
         protected bool MenuIsActive;
 
         public MainCompositeLayer(GameWindow Window) {
             this.Window = Window;
-            Menu = new Menu.WindowLayer(); Menu.Window = Window;
+            Menu = new MenuLayer(); Menu.Window = Window;
             Game = new Game(); Game.Window = Window;
             MenuIsActive = true;
         }
