@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
-using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
-using Labyrinth.Gui;
 
 namespace Labyrinth.Gui.Menu {
     class Menu : Element {
         public List<Element> Items = new List<Element>();
         protected int FocusedItemIndex = 0;
-        const int ItemsSpacing = 6;
+        const int ItemsSpacing = 10;
 
         public void Add(Element Item) {
             Items.Add(Item);
@@ -43,19 +41,29 @@ namespace Labyrinth.Gui.Menu {
                 Item.Top = CurrentTop;
                 Item.Width = Width;
 
+                GL.PushAttrib(AttribMask.AllAttribBits);
+
+                GL.Enable(EnableCap.Blend);
+                GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
                 if (Items[FocusedItemIndex] == Item) {
-                    GL.PushAttrib(AttribMask.AllAttribBits);
-
-                    GL.Color4(Color4.Beige);
-                    GL.Begin(BeginMode.Quads);
-                    GL.Vertex2(Item.Left.Value - ItemsSpacing / 2, Item.Top.Value - ItemsSpacing / 2);
-                    GL.Vertex2(Item.Right.Value + ItemsSpacing / 2, Item.Top.Value - ItemsSpacing / 2);
-                    GL.Vertex2(Item.Right.Value + ItemsSpacing / 2, Item.Bottom.Value + ItemsSpacing / 2);
-                    GL.Vertex2(Item.Left.Value - ItemsSpacing / 2, Item.Bottom.Value + ItemsSpacing / 2);
-                    GL.End();
-
-                    GL.PopAttrib();
+                    GL.Color4(new Color4(255, 255, 255, 150));
+                } else {
+                    GL.Color4(new Color4(255, 255, 255, 70));
                 }
+
+                var Padding = ItemsSpacing / 3;
+
+                GL.Begin(BeginMode.Quads);
+                GL.Vertex2(Item.Left.Value - Padding, Item.Top.Value - Padding);
+                GL.Vertex2(Item.Right.Value + Padding, Item.Top.Value - Padding);
+                GL.Vertex2(Item.Right.Value + Padding, Item.Bottom.Value + Padding);
+                GL.Vertex2(Item.Left.Value - Padding, Item.Bottom.Value + Padding);
+                GL.End();
+
+                GL.Disable(EnableCap.Blend);
+
+                GL.PopAttrib();
 
                 Item.Render();
 
@@ -79,7 +87,6 @@ namespace Labyrinth.Gui.Menu {
             } else if (Items.Count > 0) {
                 Items[FocusedItemIndex].OnKeyPress(K);
             }
-            // TODO
         }
     }
 }

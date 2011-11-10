@@ -15,21 +15,14 @@ namespace Labyrinth {
 
             NewGame = new Button("New game");
             MainMenu.Add(NewGame);
-            NewGame.Enter += OnNewGameEnter;
 
             Quit = new Button("Quit");
             MainMenu.Add(Quit);
-            Quit.Enter += OnQuitEnter;
+            Quit.Enter += (Sender, E) => {
+                Window.Exit(); // TODO confirmation dialog
+            };
 
             CurrentMenu = MainMenu;
-        }
-
-        protected void OnNewGameEnter(object Sender, EventArgs E) {
-            // TODO
-        }
-
-        protected void OnQuitEnter(object Sender, EventArgs E) {
-            Window.Exit(); // TODO confirmation dialog
         }
 
         public override void Render() {
@@ -49,41 +42,19 @@ namespace Labyrinth {
             // Draw alpha-blended overlay
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             GL.Color4(new Color4(0, 0, 0, 100));
+            
             GL.Begin(BeginMode.Quads);
             GL.Vertex2(0, 0);
             GL.Vertex2(Window.Width, 0);
             GL.Vertex2(Window.Width, Window.Height);
             GL.Vertex2(0, Window.Height);
             GL.End();
+            
             GL.Disable(EnableCap.Blend);
 
-            // debug
-            GL.Color4(Color4.Red);
-            GL.Begin(BeginMode.Quads);
-            GL.Vertex2(0, 0);
-            GL.Vertex2(10, 0);
-            GL.Vertex2(10, 10);
-            GL.Vertex2(0, 10);
-            GL.End();
-
-            GL.Color4(Color4.Green);
-            GL.Begin(BeginMode.Quads);
-            GL.Vertex2(Window.Width - 10, 0);
-            GL.Vertex2(Window.Width, 0);
-            GL.Vertex2(Window.Width, 10);
-            GL.Vertex2(Window.Width - 10, 10);
-            GL.End();
-
-            GL.Color4(Color4.Blue);
-            GL.Begin(BeginMode.Quads);
-            GL.Vertex2(Window.Width - 10, Window.Height - 10);
-            GL.Vertex2(Window.Width, Window.Height - 10);
-            GL.Vertex2(Window.Width, Window.Height);
-            GL.Vertex2(Window.Width - 10, Window.Height);
-            GL.End();
-            // end debug
-
+            // Render the menu
             CurrentMenu.ResetDimensions();
 
             int MenuWidth = Math.Min(CurrentMenu.Width.Value, Window.Width - 50);

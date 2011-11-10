@@ -171,8 +171,8 @@ namespace Labyrinth {
             }
         }
 
-        private int LoadTexture(string filename) {
-            var Bitmap = new Bitmap(filename);
+        private int LoadTexture(string Filename) {
+            var Bitmap = new Bitmap(Filename);
 
             var Texture = GL.GenTexture();
             GL.BindTexture(TextureTarget.Texture2D, Texture);

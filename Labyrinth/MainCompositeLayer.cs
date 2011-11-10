@@ -45,7 +45,7 @@ namespace Labyrinth {
                 }
             } else if (K.Equals(Key.Escape)) {
                 if (Game == null) {
-                    Window.Exit();
+                    Window.Exit(); // TODO confirmation dialog?
                 } else {
                     MenuIsActive = !MenuIsActive;
                 }
