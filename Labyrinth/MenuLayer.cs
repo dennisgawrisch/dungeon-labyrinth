@@ -7,22 +7,45 @@ using Labyrinth.Gui.Menu;
 
 namespace Labyrinth {
     class MenuLayer : GameWindowLayer {
-        protected Menu CurrentMenu, MainMenu;
-        protected Button NewGame, Quit;
+        protected Menu CurrentMenu, MainMenu, QuitConfirmationMenu;
 
         public MenuLayer() {
+            ConstructMainMenu();
+            ConstructQuitConfirmationMenu();
+            CurrentMenu = MainMenu;
+        }
+
+        public void ConstructMainMenu() {
             MainMenu = new Menu();
 
-            NewGame = new Button("New game");
+            var NewGame = new Button("New game");
             MainMenu.Add(NewGame);
 
-            Quit = new Button("Quit");
+            var Quit = new Button("Quit");
             MainMenu.Add(Quit);
             Quit.Enter += (Sender, E) => {
-                Window.Exit(); // TODO confirmation dialog
+                CurrentMenu = QuitConfirmationMenu;
             };
 
-            CurrentMenu = MainMenu;
+        }
+
+        public void ConstructQuitConfirmationMenu() {
+            QuitConfirmationMenu = new Menu();
+
+            var Question = new Gui.Text("This is no true exit. Are you fleeing?");
+            QuitConfirmationMenu.Add(Question);
+
+            var Yes = new Button("Yes");
+            QuitConfirmationMenu.Add(Yes);
+            Yes.Enter += (Sender, E) => {
+                Window.Exit();
+            };
+
+            var No = new Button("No");
+            QuitConfirmationMenu.Add(No);
+            No.Enter += (Sender, E) => {
+                CurrentMenu = MainMenu;
+            };
         }
 
         public override void Render() {
