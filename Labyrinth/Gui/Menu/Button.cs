@@ -5,7 +5,7 @@ using OpenTK.Input;
 
 namespace Labyrinth.Gui.Menu {
     class Button : Gui.Text, Control {
-        public bool Enabled { get; set; } // TODO respect while rendering
+        public bool Enabled { get; set; }
         public bool Focused { get; set; }
 
         public Button(string Label) 
