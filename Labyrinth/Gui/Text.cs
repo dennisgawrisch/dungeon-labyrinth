@@ -60,7 +60,7 @@ namespace Labyrinth.Gui {
                 using (Graphics Graphics = Graphics.FromImage(Bitmap)) {
                     Graphics.Clear(Color.Transparent);
                     Graphics.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-                    Graphics.DrawString(Label, Font, Brushes.Black, Rectangle);
+                    Graphics.DrawString(Label, Font, Brushes.White, Rectangle);
 
                     var BitmapData = Bitmap.LockBits(Rectangle, ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, BitmapData.Width, BitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, BitmapData.Scan0);
