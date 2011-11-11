@@ -24,7 +24,7 @@ namespace Labyrinth.Gui.Menu {
         protected override int GetRequiredWidth() {
             int Result = 0;
             foreach (var Item in Items) {
-                Item.ResetDimensions(); // in order to calculate required width/height; TODO: check if it leads to error
+                Item.ResetDimensions();
                 Result = Math.Max(Result, Item.Width.Value);
             }
             return Result;
@@ -33,7 +33,7 @@ namespace Labyrinth.Gui.Menu {
         protected override int GetRequiredHeight() {
             int Result = 0;
             foreach (var Item in Items) {
-                Item.ResetDimensions(); // in order to calculate required width/height; TODO: check if it leads to error
+                Item.ResetDimensions();
                 Result += Item.Height.Value;
             }
             return Result;
