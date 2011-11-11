@@ -7,7 +7,7 @@ using Labyrinth.Gui.Menu;
 
 namespace Labyrinth {
     class MenuLayer : GameWindowLayer {
-        protected Menu CurrentMenu, MainMenu, QuitConfirmationMenu;
+        public Menu CurrentMenu, MainMenu, QuitConfirmationMenu;
 
         public MenuLayer() {
             ConstructMainMenu();
@@ -19,6 +19,7 @@ namespace Labyrinth {
             MainMenu = new Menu();
 
             var NewGame = new Button("New game");
+            NewGame.Enabled = false;
             MainMenu.Add(NewGame);
 
             var Quit = new Button("Quit");
@@ -27,12 +28,15 @@ namespace Labyrinth {
                 CurrentMenu = QuitConfirmationMenu;
             };
 
+            MainMenu.Exit += (Sender, E) => {
+                CurrentMenu = QuitConfirmationMenu;
+            };
         }
 
         public void ConstructQuitConfirmationMenu() {
             QuitConfirmationMenu = new Menu();
 
-            var Question = new Gui.Text("This is no true exit. Are you fleeing?");
+            var Question = new Text("This is no true exit. Are you fleeing?");
             QuitConfirmationMenu.Add(Question);
 
             var Yes = new Button("Yes");
@@ -44,6 +48,10 @@ namespace Labyrinth {
             var No = new Button("No");
             QuitConfirmationMenu.Add(No);
             No.Enter += (Sender, E) => {
+                CurrentMenu = MainMenu;
+            };
+
+            QuitConfirmationMenu.Exit += (Sender, E) => {
                 CurrentMenu = MainMenu;
             };
         }

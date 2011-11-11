@@ -1,5 +1,3 @@
-using OpenTK.Input;
-
 namespace Labyrinth.Gui {
     abstract class Element {
         private int? DefinedLeft        = null;
@@ -82,8 +80,5 @@ namespace Labyrinth.Gui {
         }
 
         abstract public void Render();
-
-        public virtual void OnKeyPress(Key K) { // TODO decide if it should be here
-        }
     }
 }

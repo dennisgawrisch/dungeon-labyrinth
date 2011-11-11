@@ -12,7 +12,7 @@ namespace Labyrinth {
             this.Window = Window;
             Menu = new MenuLayer(); Menu.Window = Window;
             Game = new Game(); Game.Window = Window;
-            MenuIsActive = true;
+            MenuIsActive = false;
         }
 
         public override void Tick() {
@@ -43,12 +43,8 @@ namespace Labyrinth {
                 } else {
                     Window.WindowState = WindowState.Normal;
                 }
-            } else if (K.Equals(Key.Escape)) {
-                if (Game == null) {
-                    Window.Exit(); // TODO confirmation dialog?
-                } else {
-                    MenuIsActive = !MenuIsActive;
-                }
+            } else if (K.Equals(Key.Escape) && (Game != null) && (Menu.CurrentMenu == Menu.MainMenu)) {
+                MenuIsActive = !MenuIsActive;
             } else {
                 if (MenuIsActive) {
                     Menu.OnKeyPress(K);
