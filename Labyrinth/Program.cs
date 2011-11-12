@@ -22,6 +22,7 @@ namespace Labyrinth {
         public Program()
             : base(800, 600, GraphicsMode.Default, "Labyrinth") {
             VSync = VSyncMode.On;
+            WindowState = WindowState.Fullscreen;
         }
 
         protected override void OnLoad(EventArgs E) {
