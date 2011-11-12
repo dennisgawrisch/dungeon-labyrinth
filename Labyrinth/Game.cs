@@ -43,9 +43,9 @@ namespace Labyrinth {
 
             for (PlayerAngle = 0; PlayerAngle < 360; PlayerAngle += 90) {
                 var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-PlayerAngle));
-                var PlayerMovementVector = Vector3.TransformVector(Vector3.UnitY, PlayerAngleMatrix);
-                var NewPlayerPosition = Vector3.Add(PlayerPosition, PlayerMovementVector);
-                if (Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) {
+                var PlayerLookVector = Vector3.TransformVector(Vector3.UnitY, PlayerAngleMatrix);
+                var PlayerLooksAt = Vector3.Add(PlayerPosition, PlayerLookVector);
+                if (Map.CellType.Empty == Map.GetCell(PlayerLooksAt.Xy)) {
                     break;
                 }
             }
