@@ -309,9 +309,9 @@ namespace Labyrinth {
             GL.End();
 
             GL.PopAttrib();
-       }
+        }
 
-       private void RenderPlayer() {
+        private void RenderPlayer() {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             var TriangleSize = 0.3f;
@@ -337,6 +337,6 @@ namespace Labyrinth {
             GL.Translate(-PlayerPosition.X, -PlayerPosition.Y, -WallsHeight / 2);
 
             GL.PopAttrib();
-       }
+        }
     }
 }
