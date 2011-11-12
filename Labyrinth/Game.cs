@@ -140,7 +140,7 @@ namespace Labyrinth {
             if ((TorchLightMin == TorchLight) || (TorchLightMax == TorchLight) || (Rand.Next(100) < 30)) {
                 TorchLightChangeDirection = -TorchLightChangeDirection;
             }
-    
+
             GL.Enable(EnableCap.Lighting);
             GL.Enable(EnableCap.Light0);
             GL.Light(LightName.Light0, LightParameter.Position, TorchPosition);
@@ -210,17 +210,37 @@ namespace Labyrinth {
             }
             GL.CallList((int)DisplayLists[DisplayListName]);
         }
+
+        private Vector3 CeilingPoint(Vector2 Position) {
+            var Result = new Vector3(Position);
+            Result.Z = WallsHeight + (float)(Math.Sin(Position.X * Position.Y) * 0.1 * WallsHeight);
+            return Result;
+        }
+
+        private Vector3 CeilingPoint(float X, float Y) {
+            return CeilingPoint(new Vector2(X, Y));
+        }
+
         private void RenderWall(Vector2 A, Vector2 B) {
+            var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f);
+
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, TextureWall);
 
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(A.X, A.Y, WallsHeight);
-            GL.TexCoord2(1, 0); GL.Vertex3(B.X, B.Y, WallsHeight);
-            GL.TexCoord2(1, WallsHeight); GL.Vertex3(B.X, B.Y, 0);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(A));
+            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(C));
+            GL.TexCoord2(1, WallsHeight); GL.Vertex3(C.X, C.Y, 0);
             GL.TexCoord2(0, WallsHeight); GL.Vertex3(A.X, A.Y, 0);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(C));
+            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(B));
+            GL.TexCoord2(1, WallsHeight); GL.Vertex3(B.X, B.Y, 0);
+            GL.TexCoord2(0, WallsHeight); GL.Vertex3(C.X, C.Y, 0);
+            
             GL.End();
 
             GL.PopAttrib();
@@ -242,17 +262,34 @@ namespace Labyrinth {
             GL.PopAttrib();
         }
 
-        private void RenderCeiling(Vector2 Position) {
+        private void RenderCeiling(Vector2 P) {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, TextureWall);
 
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(Position.X, Position.Y, WallsHeight);
-            GL.TexCoord2(1, 0); GL.Vertex3(Position.X + 1, Position.Y, WallsHeight);
-            GL.TexCoord2(1, 1); GL.Vertex3(Position.X + 1, Position.Y + 1, WallsHeight);
-            GL.TexCoord2(0, 1); GL.Vertex3(Position.X, Position.Y + 1, WallsHeight);
+
+            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X, P.Y));
+            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y));
+            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
+            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X, P.Y + 0.5f));
+
+            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y));
+            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 1, P.Y));
+            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 1, P.Y + 0.5f));
+            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
+
+            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
+            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 1, P.Y + 0.5f));
+            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 1, P.Y + 1));
+            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 1));
+
+            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X, P.Y + 0.5f));
+            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
+            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 1));
+            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X, P.Y + 1));
+            
             GL.End();
 
             GL.PopAttrib();
