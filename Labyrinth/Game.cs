@@ -39,7 +39,7 @@ namespace Labyrinth {
 
             Map = new Map(40, 20); // TODO parametrize
 
-            PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0.5f);
+            PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0); // Z-coordinate is set in Tick
 
             for (PlayerAngle = 0; PlayerAngle < 360; PlayerAngle += 90) {
                 var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-PlayerAngle));
@@ -88,6 +88,9 @@ namespace Labyrinth {
             if (Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) {
                 PlayerPosition = NewPlayerPosition;
             }
+
+            var FloorPosition = this.VariousedPoint(PlayerPosition.X, PlayerPosition.Y, 0);
+            PlayerPosition.Z = FloorPosition.Z + 0.5f;
 
             if (((int)(Math.Floor(PlayerPosition.X)) == Map.FinishPosition.X) && ((int)(Math.Floor(PlayerPosition.Y)) == Map.FinishPosition.Y)) {
                 Window.Exit(); // TODO
