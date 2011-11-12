@@ -312,10 +312,10 @@ namespace Labyrinth {
             GL.Color4(1.0f, 0, 0, 0.7f);
 
             GL.Begin(BeginMode.Polygon);
-            GL.Vertex2(0, 0);
-            GL.Vertex2(TriangleSize / 2, -TriangleSize);
-            GL.Vertex2(0, -TriangleSize * 0.75);
-            GL.Vertex2(-TriangleSize / 2, -TriangleSize);
+            GL.Vertex2(0, TriangleSize / 2);
+            GL.Vertex2(TriangleSize / 2, -TriangleSize / 2);
+            GL.Vertex2(0, -TriangleSize / 4);
+            GL.Vertex2(-TriangleSize / 2, -TriangleSize / 2);
             GL.End();
 
             GL.Rotate(PlayerAngle, Vector3.UnitZ);
