@@ -211,11 +211,11 @@ namespace Labyrinth {
             GL.CallList((int)DisplayLists[DisplayListName]);
         }
 
-        private Vector3 VariousedPoint(Vector3 Position) { // TODO make better, smoother formula
+        private Vector3 VariousedPoint(Vector3 Position) {
             var Result = Position;
-            var Magic = (float)Math.Sin(Position.X * Position.Y + Position.Z / WallsHeight);
+            var Magic = (float)Math.Sin((Position.X + Position.Y + Position.Z + Math.E) * 2);
             Result.X += Magic * 0.1f;
-            Result.Y += Magic * 0.1f;
+            Result.Y -= Magic * 0.1f;
             Result.Z += Magic * 0.1f * WallsHeight;
             return Result;
         }
