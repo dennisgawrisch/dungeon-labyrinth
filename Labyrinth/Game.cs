@@ -211,84 +211,85 @@ namespace Labyrinth {
             GL.CallList((int)DisplayLists[DisplayListName]);
         }
 
-        private Vector3 CeilingPoint(Vector2 Position) {
-            var Result = new Vector3(Position);
-            Result.Z = WallsHeight + (float)(Math.Sin(Position.X * Position.Y) * 0.1 * WallsHeight);
+        private Vector3 VariousedPoint(Vector3 Position) { // TODO make better, smoother formula
+            var Result = Position;
+            var Magic = (float)Math.Sin(Position.X * Position.Y + Position.Z / WallsHeight);
+            Result.X += Magic * 0.1f;
+            Result.Y += Magic * 0.1f;
+            Result.Z += Magic * 0.1f * WallsHeight;
             return Result;
         }
 
-        private Vector3 CeilingPoint(float X, float Y) {
-            return CeilingPoint(new Vector2(X, Y));
+        private Vector3 VariousedPoint(float X, float Y, float Z) {
+            return VariousedPoint(new Vector3(X, Y, Z));
         }
 
         private void RenderWall(Vector2 A, Vector2 B) {
-            var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f);
-
-            GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, TextureWall);
 
             GL.Begin(BeginMode.Quads);
 
-            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(A));
-            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(C));
-            GL.TexCoord2(1, WallsHeight); GL.Vertex3(C.X, C.Y, 0);
-            GL.TexCoord2(0, WallsHeight); GL.Vertex3(A.X, A.Y, 0);
+            var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f); // middlepoint
+            Vector2[] P1 = {A, C};
+            Vector2[] P2 = {C, B};
 
-            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(C));
-            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(B));
-            GL.TexCoord2(1, WallsHeight); GL.Vertex3(B.X, B.Y, 0);
-            GL.TexCoord2(0, WallsHeight); GL.Vertex3(C.X, C.Y, 0);
+            for (var i = 0; i < 2; i++ ) {
+                var M = P1[i];
+                var N = P2[i];
+                for (float Z = 0; Z < WallsHeight; Z += WallsHeight / 2) {
+                    GL.TexCoord2(M.Equals(A) ? 0 : 0.5, Z + WallsHeight / 2); GL.Vertex3(VariousedPoint(M.X, M.Y, Z + WallsHeight / 2));
+                    GL.TexCoord2(M.Equals(A) ? 0.5 : 1, Z + WallsHeight / 2); GL.Vertex3(VariousedPoint(N.X, N.Y, Z + WallsHeight / 2));
+                    GL.TexCoord2(M.Equals(A) ? 0.5 : 1, Z); GL.Vertex3(VariousedPoint(N.X, N.Y, Z));
+                    GL.TexCoord2(M.Equals(A) ? 0 : 0.5, Z); GL.Vertex3(VariousedPoint(M.X, M.Y, Z));
+                }
+            }
             
             GL.End();
 
             GL.PopAttrib();
         }
 
-        private void RenderFloor(Vector2 Position) {
-            GL.PushAttrib(AttribMask.AllAttribBits);
+        private void RenderFloor(Vector2 P) {
+            GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, TextureWall);
 
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 1); GL.Vertex3(Position.X, Position.Y, 0);
-            GL.TexCoord2(1, 1); GL.Vertex3(Position.X + 1, Position.Y, 0);
-            GL.TexCoord2(1, 0); GL.Vertex3(Position.X + 1, Position.Y + 1, 0);
-            GL.TexCoord2(0, 0); GL.Vertex3(Position.X, Position.Y + 1, 0);
+
+            for (var X = P.X; X <= P.X + 0.5; X += 0.5f) {
+                for (var Y = P.Y; Y <= P.Y + 0.5; Y += 0.5f) {
+                    GL.TexCoord2(X - P.X, Y - P.Y); GL.Vertex3(VariousedPoint(X, Y, 0));
+                    GL.TexCoord2(X - P.X + 0.5, Y - P.Y); GL.Vertex3(VariousedPoint(X + 0.5f, Y, 0));
+                    GL.TexCoord2(X - P.X + 0.5, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X + 0.5f, Y + 0.5f, 0));
+                    GL.TexCoord2(X - P.X, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X, Y + 0.5f, 0));
+                }
+            }
+            
             GL.End();
 
             GL.PopAttrib();
         }
 
         private void RenderCeiling(Vector2 P) {
-            GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, TextureWall);
 
             GL.Begin(BeginMode.Quads);
 
-            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X, P.Y));
-            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y));
-            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
-            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X, P.Y + 0.5f));
-
-            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y));
-            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 1, P.Y));
-            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 1, P.Y + 0.5f));
-            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
-
-            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
-            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 1, P.Y + 0.5f));
-            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 1, P.Y + 1));
-            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 1));
-
-            GL.TexCoord2(0, 0); GL.Vertex3(CeilingPoint(P.X, P.Y + 0.5f));
-            GL.TexCoord2(1, 0); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 0.5f));
-            GL.TexCoord2(1, 1); GL.Vertex3(CeilingPoint(P.X + 0.5f, P.Y + 1));
-            GL.TexCoord2(0, 1); GL.Vertex3(CeilingPoint(P.X, P.Y + 1));
+            for (var X = P.X; X <= P.X + 0.5; X += 0.5f) {
+                for (var Y = P.Y; Y <= P.Y + 0.5; Y += 0.5f) {
+                    GL.TexCoord2(X - P.X, Y - P.Y); GL.Vertex3(VariousedPoint(X, Y, WallsHeight));
+                    GL.TexCoord2(X - P.X + 0.5, Y - P.Y); GL.Vertex3(VariousedPoint(X + 0.5f, Y, WallsHeight));
+                    GL.TexCoord2(X - P.X + 0.5, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X + 0.5f, Y + 0.5f, WallsHeight));
+                    GL.TexCoord2(X - P.X, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X, Y + 0.5f, WallsHeight));
+                }
+            }
             
             GL.End();
 
