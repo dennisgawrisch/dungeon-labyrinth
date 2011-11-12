@@ -25,6 +25,9 @@ namespace Labyrinth {
         private float PlayerTurnSpeed = 5; // in degrees
 
         private float WallsHeight = 0.7f;
+        private float WallsHeightVariation = 0.1f;
+        private float WallsXyVariation = 0.1f;
+        private float PlayerModelSize = 0.3f;
 
         private int TextureWall;
         private Hashtable DisplayLists = new Hashtable();
@@ -76,16 +79,23 @@ namespace Labyrinth {
             }
 
             PlayerMovementVector = Vector3.TransformVector(PlayerMovementVector, PlayerAngleMatrix);
+            var AdditionalMovementVector = PlayerMovementVector;
+            AdditionalMovementVector.NormalizeFast();
+            AdditionalMovementVector = Vector3.Multiply(AdditionalMovementVector, (float)Math.Max(PlayerModelSize, WallsXyVariation * Math.Sqrt(2)));
 
             var NewPlayerPosition = PlayerPosition;
             NewPlayerPosition.X += PlayerMovementVector.X;
-            if (Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) {
+            var AdditionalPosition = NewPlayerPosition;
+            AdditionalPosition.X += AdditionalMovementVector.X;
+            if ((Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) && (Map.CellType.Empty == Map.GetCell(AdditionalPosition.Xy))) {
                 PlayerPosition = NewPlayerPosition;
             }
 
             NewPlayerPosition = PlayerPosition;
             NewPlayerPosition.Y += PlayerMovementVector.Y;
-            if (Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) {
+            AdditionalPosition = NewPlayerPosition;
+            AdditionalPosition.Y += AdditionalMovementVector.Y;
+            if ((Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) && (Map.CellType.Empty == Map.GetCell(AdditionalPosition.Xy))) {
                 PlayerPosition = NewPlayerPosition;
             }
 
@@ -156,7 +166,10 @@ namespace Labyrinth {
             GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != Camera) ? 0.5f : 0.1f);
 
             RenderMap();
-            RenderPlayer();
+
+            if (CameraMode.ThirdPerson == Camera) {
+                RenderPlayer();
+            }
         }
 
         private int LoadTexture(string Filename) {
@@ -216,10 +229,9 @@ namespace Labyrinth {
 
         private Vector3 VariousedPoint(Vector3 Position) {
             var Result = Position;
-            var Magic = (float)Math.Sin((Position.X + Position.Y + Position.Z + Math.E) * 2);
-            Result.X += Magic * 0.1f;
-            Result.Y -= Magic * 0.1f;
-            Result.Z += Magic * 0.1f * WallsHeight;
+            Result.X += (float)Math.Sin((Position.X + Position.Y + Position.Z + Math.E) * 1.5) * WallsXyVariation;
+            Result.Y += (float)Math.Sin((Position.X + Position.Y + Position.Z + Math.E) * 2.5) * WallsXyVariation;
+            Result.Z += (float)Math.Sin((Position.X + Position.Y + Position.Z + Math.E) * 1.0) * WallsHeightVariation;
             return Result;
         }
 
@@ -335,8 +347,6 @@ namespace Labyrinth {
        private void RenderPlayer() {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
-            var TriangleSize = 0.3f;
-
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
             GL.Enable(EnableCap.Blend);
@@ -348,10 +358,10 @@ namespace Labyrinth {
             GL.Color4(1.0f, 0, 0, 0.7f);
 
             GL.Begin(BeginMode.Polygon);
-            GL.Vertex2(0, TriangleSize / 2);
-            GL.Vertex2(TriangleSize / 2, -TriangleSize / 2);
-            GL.Vertex2(0, -TriangleSize / 4);
-            GL.Vertex2(-TriangleSize / 2, -TriangleSize / 2);
+            GL.Vertex2(0, PlayerModelSize / 2);
+            GL.Vertex2(PlayerModelSize / 2, -PlayerModelSize / 2);
+            GL.Vertex2(0, -PlayerModelSize / 4);
+            GL.Vertex2(-PlayerModelSize / 2, -PlayerModelSize / 2);
             GL.End();
 
             GL.Rotate(PlayerAngle, Vector3.UnitZ);
