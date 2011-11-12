@@ -210,25 +210,20 @@ namespace Labyrinth {
             }
             GL.CallList((int)DisplayLists[DisplayListName]);
         }
-
-        private void RenderWall(Vector2 A, Vector2 B, float z) {
+        private void RenderWall(Vector2 A, Vector2 B) {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Enable(EnableCap.Texture2D);
             GL.BindTexture(TextureTarget.Texture2D, TextureWall);
 
             GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 0); GL.Vertex3(A.X, A.Y, z + WallsHeight);
-            GL.TexCoord2(1, 0); GL.Vertex3(B.X, B.Y, z + WallsHeight);
-            GL.TexCoord2(1, WallsHeight); GL.Vertex3(B.X, B.Y, z);
-            GL.TexCoord2(0, WallsHeight); GL.Vertex3(A.X, A.Y, z);
+            GL.TexCoord2(0, 0); GL.Vertex3(A.X, A.Y, WallsHeight);
+            GL.TexCoord2(1, 0); GL.Vertex3(B.X, B.Y, WallsHeight);
+            GL.TexCoord2(1, WallsHeight); GL.Vertex3(B.X, B.Y, 0);
+            GL.TexCoord2(0, WallsHeight); GL.Vertex3(A.X, A.Y, 0);
             GL.End();
 
             GL.PopAttrib();
-        }
-
-        private void RenderWall(Vector2 A, Vector2 B) {
-            RenderWall(A, B, 0);
         }
 
         private void RenderFloor(Vector2 Position) {
