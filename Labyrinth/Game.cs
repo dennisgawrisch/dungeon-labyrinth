@@ -32,12 +32,13 @@ namespace Labyrinth {
         private float PlayerModelSize = 0.3f;
 
         private Hashtable Textures = new Hashtable();
-        private Hashtable DisplayLists = new Hashtable();
 
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
 
         private float IconMinSize = 0.35f, IconMaxSize = 0.40f;
+
+        private float VisibilityDistance = 6f;
 
         private HashSet<int> CollectedCheckpoints = new HashSet<int>();
         private Color4[] CheckpointsColors = { Color4.Red, Color4.SpringGreen, Color4.DodgerBlue, Color4.Yellow };
@@ -143,7 +144,8 @@ namespace Labyrinth {
 
             GL.Color4(Color4.Transparent);
 
-            var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, Math.Max(Math.Max(Map.Width, Map.Height), WallsHeight * 10) * 2f);
+            var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, Math.Max(Map.Width, Map.Height)); 
+            // do not clip on VisibilityDistance, because it is done by RenderMap, and other objects like icons should not be clipped
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref Projection);
 
@@ -218,38 +220,36 @@ namespace Labyrinth {
         }
 
         private void RenderMap() {
-            var DisplayListName = "map_" + Camera.GetHashCode();
-            if (!DisplayLists.ContainsKey(DisplayListName)) {
-                DisplayLists[DisplayListName] = GL.GenLists(1);
-                GL.NewList((int)DisplayLists[DisplayListName], ListMode.Compile);
-                for (var X = 0; X < Map.Width; X++) {
-                    for (var Y = 0; Y < Map.Height; Y++) {
-                        var Position = new Vector2(X, Y);
+            var Xmin = (int)Math.Floor(Math.Max(PlayerPosition.X - VisibilityDistance, 0));
+            var Ymin = (int)Math.Floor(Math.Max(PlayerPosition.Y - VisibilityDistance, 0));
+            var Xmax = (int)Math.Ceiling(Math.Min(PlayerPosition.X + VisibilityDistance, Map.Width - 1));
+            var Ymax = (int)Math.Ceiling(Math.Min(PlayerPosition.Y + VisibilityDistance, Map.Height - 1));
 
-                        if (Map.CellType.Empty == Map.GetCell(X, Y)) {
-                            if (Map.CellType.Wall == Map.GetCell(X, Y + 1)) {
-                                RenderWall(new Vector2(X, Y + 1), new Vector2(X + 1, Y + 1));
-                            }
-                            if (Map.CellType.Wall == Map.GetCell(X, Y - 1)) {
-                                RenderWall(new Vector2(X + 1, Y), new Vector2(X, Y));
-                            }
-                            if (Map.CellType.Wall == Map.GetCell(X - 1, Y)) {
-                                RenderWall(new Vector2(X, Y), new Vector2(X, Y + 1));
-                            }
-                            if (Map.CellType.Wall == Map.GetCell(X + 1, Y)) {
-                                RenderWall(new Vector2(X + 1, Y + 1), new Vector2(X + 1, Y));
-                            }
+            for (var X = Xmin; X <= Xmax; X++) {
+                for (var Y = Ymin; Y <= Ymax; Y++) {
+                    var Position = new Vector2(X, Y);
 
-                            RenderFloor(Position);
-                            if (CameraMode.FirstPerson == Camera) {
-                                RenderCeiling(Position);
-                            }
+                    if (Map.CellType.Empty == Map.GetCell(X, Y)) {
+                        if (Map.CellType.Wall == Map.GetCell(X, Y + 1)) {
+                            RenderWall(new Vector2(X, Y + 1), new Vector2(X + 1, Y + 1));
+                        }
+                        if (Map.CellType.Wall == Map.GetCell(X, Y - 1)) {
+                            RenderWall(new Vector2(X + 1, Y), new Vector2(X, Y));
+                        }
+                        if (Map.CellType.Wall == Map.GetCell(X - 1, Y)) {
+                            RenderWall(new Vector2(X, Y), new Vector2(X, Y + 1));
+                        }
+                        if (Map.CellType.Wall == Map.GetCell(X + 1, Y)) {
+                            RenderWall(new Vector2(X + 1, Y + 1), new Vector2(X + 1, Y));
+                        }
+
+                        RenderFloor(Position);
+                        if (CameraMode.FirstPerson == Camera) {
+                            RenderCeiling(Position);
                         }
                     }
                 }
-                GL.EndList();
             }
-            GL.CallList((int)DisplayLists[DisplayListName]);
         }
 
         private Vector3 VariousedPoint(Vector3 Position) {
