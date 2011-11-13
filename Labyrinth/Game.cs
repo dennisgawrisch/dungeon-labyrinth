@@ -381,7 +381,7 @@ namespace Labyrinth {
         }
 
         private void RenderExit(Vector2 Position) {
-            RenderIcon(Position, (int)Textures["Exit"], (CollectedCheckpoints.Count == Map.Checkpoints.Count) ? Color4.SpringGreen : Color4.Red);
+            RenderIcon(Position, (int)Textures["Exit"], (CollectedCheckpoints.Count == Map.Checkpoints.Count) ? Color4.Green : Color4.Red);
         }
 
         private void RenderCheckpoint(Vector2 Position, int Index) {
