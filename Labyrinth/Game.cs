@@ -13,7 +13,13 @@ namespace Labyrinth {
         private Random Rand;
         private int TicksCounter = 0;
 
-        public enum CameraMode {
+        public enum DifficultyLevel {
+            Easy,
+            Normal,
+            Hard,
+        };
+
+        private enum CameraMode {
             FirstPerson,
             ThirdPerson
         };
@@ -49,14 +55,20 @@ namespace Labyrinth {
         private HashSet<int> CollectedCheckpoints = new HashSet<int>();
         private Color4[] CheckpointsColors = { Color4.Red, Color4.SpringGreen, Color4.DodgerBlue, Color4.Yellow };
 
-        public Game() {
+        public Game(DifficultyLevel Difficulty) {
             Rand = new Random();
 
             Textures["Wall"] = LoadTexture("../../textures/wall.png");
             Textures["Exit"] = LoadTexture("../../textures/exit.png");
             Textures["Key"] = LoadTexture("../../textures/key.png");
 
-            Map = new Map(1, 10); // TODO parametrize
+            if (DifficultyLevel.Easy == Difficulty) {
+                Map = new Map(Rand, 20, 20, 2);
+            } else if (DifficultyLevel.Normal == Difficulty) {
+                Map = new Map(Rand, 35, 35, 3);
+            } else if (DifficultyLevel.Hard == Difficulty) {
+                Map = new Map(Rand, 50, 50, 4);
+            }
 
             PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0); // Z-coordinate is set in Tick
 

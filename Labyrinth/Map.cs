@@ -15,8 +15,8 @@ namespace Labyrinth {
         public Vector2 FinishPosition { get; protected set; }
         public List<Vector2> Checkpoints { get; protected set; }
 
-        public Map(int Width, int Height) {
-            Rand = new Random();
+        public Map(Random Randomizer, int Width, int Height, int CheckpointsCount) {
+            Rand = Randomizer;
 
             Cells = new CellType[Width, Height];
 
@@ -88,7 +88,6 @@ namespace Labyrinth {
     			}
     		} while (PositionsStack.Count > 0);
 
-            var CheckpointsCount = 4; // TODO depends on difficulty level
             Checkpoints = new List<Vector2>(CheckpointsCount);
             for (var i = 0; i < CheckpointsCount; i++) {
                 do {
