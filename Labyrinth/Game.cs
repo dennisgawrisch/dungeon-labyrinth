@@ -16,7 +16,6 @@ namespace Labyrinth {
         public enum CameraMode {
             FirstPerson,
             ThirdPerson
-
         };
         private CameraMode Camera = CameraMode.FirstPerson;
 
@@ -156,14 +155,11 @@ namespace Labyrinth {
                 GL.Rotate(90, Vector3.UnitX); // look down
             }
 
-
             GL.Rotate(PlayerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(PlayerPosition, -1f));
             if (CameraMode.ThirdPerson == Camera) {
                 GL.Translate(0, 0, -WallsHeight * 5);
             }
-
-
 
             var TorchPosition = new Vector4(PlayerPosition);
             TorchPosition.W = 1;
@@ -189,8 +185,7 @@ namespace Labyrinth {
 
             GL.Enable(EnableCap.Fog);
             GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != Camera) ? 0.5f : 0.1f);
-
-
+            
             RenderMap();
 
             for (var i = 0; i < Map.Checkpoints.Count; i++) { // TODO must fix problem when an icon overlaps another icon and hides it
@@ -249,7 +244,6 @@ namespace Labyrinth {
                             if (CameraMode.FirstPerson == Camera) {
                                 RenderCeiling(Position);
                             }
-
                         }
                     }
                 }
@@ -277,7 +271,6 @@ namespace Labyrinth {
             GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
-
 
             var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f); // middlepoint
             Vector2[] P1 = { A, C };
@@ -361,7 +354,6 @@ namespace Labyrinth {
 
             GL.Rotate(-PlayerAngle, Vector3.UnitZ);
 
-
             if (CameraMode.FirstPerson != Camera) {
                 GL.Rotate(-90, Vector3.UnitX);
             }
@@ -390,7 +382,6 @@ namespace Labyrinth {
 
         private void RenderPlayer() {
             GL.PushAttrib(AttribMask.AllAttribBits);
-
 
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
