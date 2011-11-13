@@ -13,6 +13,7 @@ namespace Labyrinth {
         protected CellType[,] Cells;
         public Vector2 StartPosition { get; protected set; }
         public Vector2 FinishPosition { get; protected set; }
+        public List<Vector2> Checkpoints { get; protected set; }
 
         public Map(int Width, int Height) {
             Rand = new Random();
@@ -21,83 +22,84 @@ namespace Labyrinth {
 
 			var MaxMovementTries = 15;
 			var DirectionChangePossibility = 50;
-            var MinPathToFinish = Math.Sqrt(Width * Height);
             var LoopChancePerMille = 10;
 
-            var PossibleFinishPositions = new List<Vector2>(Width * Height);
+            for (var X = 0; X < Width; X++) {
+                for (var Y = 0; Y < Height; Y++) {
+                        Cells[X, Y] = CellType.Wall;
+                }
+            }
+
+            StartPosition = RandomPosition();
+
+    		var Position = StartPosition;
+    		var PositionsStack = new Stack<Vector2>(Width * Height);
+    		PositionsStack.Push(Position);
+    		var Direction = Vector2.UnitY;
+
+    		do {
+    			SetCell(Position, CellType.Empty);
+    
+    			var Success = false;
+    			for (var Tries = 0; !Success && (Tries < MaxMovementTries); Tries++) {
+    				var DirectionChange = Rand.Next(-200, +200);
+    				if (DirectionChange < DirectionChangePossibility - 200) {
+    					Direction = Direction.PerpendicularLeft;
+    				} else if (DirectionChange > 200 - DirectionChangePossibility) {
+    					Direction = Direction.PerpendicularRight;
+    				}
+    
+    				var Next = Vector2.Add(Position, Direction);
+    				var LeftToNext = Vector2.Add(Next, Direction.PerpendicularLeft);
+    				var RightToNext = Vector2.Add(Next, Direction.PerpendicularRight);
+    				var NextNext = Vector2.Add(Next, Direction);
+    				var LeftToNextNext = Vector2.Add(NextNext, Direction.PerpendicularLeft);
+    				var RightToNextNext = Vector2.Add(NextNext, Direction.PerpendicularRight);
+
+                    var WithMapBounds = (
+                        (0 <= Next.X) && (Next.X < Width)
+                        && (0 <= Next.Y) && (Next.Y < Height)
+                    );
+                    var NextIsWall = (
+                        (CellType.Wall == GetCell(Next))
+                        && (CellType.Wall == GetCell(LeftToNext))
+                        && (CellType.Wall == GetCell(RightToNext))
+                    );
+                    var NextNextIsWall = (
+                        (CellType.Wall == GetCell(NextNext))
+                        && (CellType.Wall == GetCell(LeftToNextNext))
+                        && (CellType.Wall == GetCell(RightToNextNext))
+                    );
+
+    				if (
+    					WithMapBounds
+                        && NextIsWall
+                        && ((Rand.Next(0, 1000) < LoopChancePerMille) || NextNextIsWall)
+    				) {
+    					Position = Next;
+    					Success = true;
+    				}
+    			}
+    
+    			if (Success) {
+    				PositionsStack.Push(Position);
+    			} else {
+    				Position = PositionsStack.Pop();
+    			}
+    		} while (PositionsStack.Count > 0);
+
+            var CheckpointsCount = 4; // TODO depends on difficulty level
+            Checkpoints = new List<Vector2>(CheckpointsCount);
+            for (var i = 0; i < CheckpointsCount; i++) {
+                do {
+                    Position = RandomPosition();
+                } while ((GetCell(Position) != CellType.Empty) || (StartPosition == Position) || Checkpoints.Contains(Position));
+                Checkpoints.Add(Position);
+            }
 
             do {
-                for (var X = 0; X < Width; X++) {
-                    for (var Y = 0; Y < Height; Y++) {
-                          Cells[X, Y] = CellType.Wall;
-                    }
-                }
-
-                StartPosition = RandomPosition();
-                PossibleFinishPositions.Clear();
-
-    			var Position = StartPosition;
-    			var PositionsStack = new Stack<Vector2>(Width * Height);
-    			PositionsStack.Push(Position);
-    			var Direction = Vector2.UnitY;
-
-    			do {
-    				SetCell(Position, CellType.Empty);
-    
-    				var Success = false;
-    				for (var Tries = 0; !Success && (Tries < MaxMovementTries); Tries++) {
-    					var DirectionChange = Rand.Next(-200, +200);
-    					if (DirectionChange < DirectionChangePossibility - 200) {
-    						Direction = Direction.PerpendicularLeft;
-    					} else if (DirectionChange > 200 - DirectionChangePossibility) {
-    						Direction = Direction.PerpendicularRight;
-    					}
-    
-    					var Next = Vector2.Add(Position, Direction);
-    					var LeftToNext = Vector2.Add(Next, Direction.PerpendicularLeft);
-    					var RightToNext = Vector2.Add(Next, Direction.PerpendicularRight);
-    					var NextNext = Vector2.Add(Next, Direction);
-    					var LeftToNextNext = Vector2.Add(NextNext, Direction.PerpendicularLeft);
-    					var RightToNextNext = Vector2.Add(NextNext, Direction.PerpendicularRight);
-
-                        var WithMapBounds = (
-                            (0 <= Next.X) && (Next.X < Width)
-                            && (0 <= Next.Y) && (Next.Y < Height)
-                        );
-                        var NextIsWall = (
-                            (CellType.Wall == GetCell(Next))
-                            && (CellType.Wall == GetCell(LeftToNext))
-                            && (CellType.Wall == GetCell(RightToNext))
-                        );
-                        var NextNextIsWall = (
-                            (CellType.Wall == GetCell(NextNext))
-                            && (CellType.Wall == GetCell(LeftToNextNext))
-                            && (CellType.Wall == GetCell(RightToNextNext))
-                        );
-
-    					if (
-    					    WithMapBounds
-                            && NextIsWall
-                            && ((Rand.Next(0, 1000) < LoopChancePerMille) || NextNextIsWall)
-    					) {
-    						Position = Next;
-    						Success = true;
-    					}
-    				}
-    
-    				if (Success) {
-    					PositionsStack.Push(Position);
-    				} else {
-    					if (PositionsStack.Count > MinPathToFinish) {
-    						PossibleFinishPositions.Add(Position);
-    					}
-    
-    					Position = PositionsStack.Pop();
-    				}
-    			} while (PositionsStack.Count > 0);
-            } while (0 == PossibleFinishPositions.Count);
-
-            FinishPosition = PossibleFinishPositions[Rand.Next(0, PossibleFinishPositions.Count)];
+                FinishPosition = RandomPosition();
+            } while ((GetCell(FinishPosition) != CellType.Empty) || (StartPosition == FinishPosition) || Checkpoints.Contains(FinishPosition));
         }
 
         public int Width {

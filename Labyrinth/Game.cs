@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using OpenTK;
@@ -9,11 +10,13 @@ using OpenTK.Input;
 
 namespace Labyrinth {
     class Game : GameWindowLayer {
-		private Random Rand;
+        private Random Rand;
+        private int TicksCounter = 0;
 
         public enum CameraMode {
             FirstPerson,
             ThirdPerson
+
         };
         private CameraMode Camera = CameraMode.FirstPerson;
 
@@ -29,21 +32,29 @@ namespace Labyrinth {
         private float WallsXyVariation = 0.1f;
         private float PlayerModelSize = 0.3f;
 
-        private int TextureWall;
+        private Hashtable Textures = new Hashtable();
         private Hashtable DisplayLists = new Hashtable();
 
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
 
+        private float IconMinSize = 0.35f, IconMaxSize = 0.40f;
+
+        private HashSet<int> CollectedCheckpoints = new HashSet<int>();
+        private Color4[] CheckpointsColors = { Color4.Red, Color4.SpringGreen, Color4.DodgerBlue, Color4.Yellow };
+
         public Game() {
-			Rand = new Random();
+            Rand = new Random();
 
-            TextureWall = LoadTexture("../../textures/wall.png");
+            Textures["Wall"] = LoadTexture("../../textures/wall.png");
+            Textures["Exit"] = LoadTexture("../../textures/exit.png");
+            Textures["Key"] = LoadTexture("../../textures/key.png");
 
-            Map = new Map(40, 20); // TODO parametrize
+            Map = new Map(10, 10); // TODO parametrize
 
             PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0); // Z-coordinate is set in Tick
 
+            // making player to face empty cell on start
             for (PlayerAngle = 0; PlayerAngle < 360; PlayerAngle += 90) {
                 var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-PlayerAngle));
                 var PlayerLookVector = Vector3.TransformVector(Vector3.UnitY, PlayerAngleMatrix);
@@ -55,6 +66,8 @@ namespace Labyrinth {
         }
 
         public override void Tick() {
+            ++TicksCounter;
+
             if (Window.Keyboard[Key.Left]) {
                 PlayerAngle -= PlayerTurnSpeed;
             }
@@ -102,7 +115,15 @@ namespace Labyrinth {
             var FloorPosition = this.VariousedPoint(PlayerPosition.X, PlayerPosition.Y, 0);
             PlayerPosition.Z = FloorPosition.Z + 0.5f;
 
-            if (((int)(Math.Floor(PlayerPosition.X)) == Map.FinishPosition.X) && ((int)(Math.Floor(PlayerPosition.Y)) == Map.FinishPosition.Y)) {
+            var PlayerPositionCell = new Vector2((int)(Math.Floor(PlayerPosition.X)), (int)(Math.Floor(PlayerPosition.Y)));
+
+            for (var i = 0; i < Map.Checkpoints.Count; i++) {
+                if (!CollectedCheckpoints.Contains(i) && (PlayerPositionCell == Map.Checkpoints[i])) {
+                    CollectedCheckpoints.Add(i);
+                }
+            }
+
+            if ((PlayerPositionCell == Map.FinishPosition) && (CollectedCheckpoints.Count == Map.Checkpoints.Count)) {
                 Window.Exit(); // TODO
             }
         }
@@ -111,6 +132,7 @@ namespace Labyrinth {
             if (K.Equals(Key.C)) {
                 if (CameraMode.FirstPerson == Camera) {
                     Camera = CameraMode.ThirdPerson;
+
                 } else {
                     Camera = CameraMode.FirstPerson;
                 }
@@ -134,19 +156,22 @@ namespace Labyrinth {
                 GL.Rotate(90, Vector3.UnitX); // look down
             }
 
+
             GL.Rotate(PlayerAngle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(PlayerPosition, -1f));
             if (CameraMode.ThirdPerson == Camera) {
                 GL.Translate(0, 0, -WallsHeight * 5);
             }
 
+
+
             var TorchPosition = new Vector4(PlayerPosition);
             TorchPosition.W = 1;
-    
+
             var TorchLightMin = 0.10f;
             var TorchLightMax = 0.20f;
             var TorchLightChangeSpeed = 0.007f;
-    
+
             TorchLight += Rand.Next(-100, +100) / 100f * TorchLightChangeSpeed * TorchLightChangeDirection;
             TorchLight = Math.Max(TorchLight, TorchLightMin);
             TorchLight = Math.Min(TorchLight, TorchLightMax);
@@ -165,7 +190,16 @@ namespace Labyrinth {
             GL.Enable(EnableCap.Fog);
             GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != Camera) ? 0.5f : 0.1f);
 
+
             RenderMap();
+
+            for (var i = 0; i < Map.Checkpoints.Count; i++) { // TODO must fix problem when an icon overlaps another icon and hides it
+                if (!CollectedCheckpoints.Contains(i)) {
+                    RenderCheckpoint(Map.Checkpoints[i], i);
+                }
+            }
+
+            RenderExit(Map.FinishPosition);
 
             if (CameraMode.ThirdPerson == Camera) {
                 RenderPlayer();
@@ -216,9 +250,6 @@ namespace Labyrinth {
                                 RenderCeiling(Position);
                             }
 
-                            if (Map.FinishPosition.Equals(Position)) {
-                                RenderExit(Position);
-                            }
                         }
                     }
                 }
@@ -243,15 +274,16 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, TextureWall);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
 
-            var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f); // middlepoint
-            Vector2[] P1 = {A, C};
-            Vector2[] P2 = {C, B};
 
-            for (var i = 0; i < 2; i++ ) {
+            var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f); // middlepoint
+            Vector2[] P1 = { A, C };
+            Vector2[] P2 = { C, B };
+
+            for (var i = 0; i < 2; i++) {
                 var M = P1[i];
                 var N = P2[i];
                 for (float Z = 0; Z < WallsHeight; Z += WallsHeight / 2) {
@@ -261,7 +293,7 @@ namespace Labyrinth {
                     GL.TexCoord2(M.Equals(A) ? 0 : 0.5, Z); GL.Vertex3(VariousedPoint(M.X, M.Y, Z));
                 }
             }
-            
+
             GL.End();
 
             GL.PopAttrib();
@@ -271,7 +303,7 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, TextureWall);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
 
@@ -283,7 +315,7 @@ namespace Labyrinth {
                     GL.TexCoord2(X - P.X, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X, Y + 0.5f, 0));
                 }
             }
-            
+
             GL.End();
 
             GL.PopAttrib();
@@ -293,7 +325,7 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, TextureWall);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
 
@@ -305,47 +337,60 @@ namespace Labyrinth {
                     GL.TexCoord2(X - P.X, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X, Y + 0.5f, WallsHeight));
                 }
             }
-            
+
             GL.End();
 
             GL.PopAttrib();
         }
 
-        private void RenderExit(Vector2 Position) {
+        private void RenderIcon(Vector2 Position, int Texture, Color4 Color) {
             GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushMatrix();
 
-            var PortalWidth = 0.7f;
+            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 5f) / 2 - 1) + IconMaxSize;
 
-            GL.Disable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
+            GL.Disable(EnableCap.Fog);
             GL.Enable(EnableCap.Blend);
+
+            GL.BindTexture(TextureTarget.Texture2D, Texture);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            GL.Color4(0, 1, 0, 0.3f);
+            GL.Translate(Position.X + 0.5, Position.Y + 0.5, WallsHeight / 2);
 
-            GL.Begin(BeginMode.QuadStrip);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, WallsHeight);
+            GL.Rotate(-PlayerAngle, Vector3.UnitZ);
+
+
+            if (CameraMode.FirstPerson != Camera) {
+                GL.Rotate(-90, Vector3.UnitX);
+            }
+
+            Color.A = 0.7f;
+            GL.Color4(Color);
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
+            GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
+            GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
+            GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
             GL.End();
 
-            GL.Begin(BeginMode.QuadStrip);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, WallsHeight);
-            GL.End();
-
+            GL.PopMatrix();
             GL.PopAttrib();
-       }
+        }
 
-       private void RenderPlayer() {
+        private void RenderExit(Vector2 Position) {
+            RenderIcon(Position, (int)Textures["Exit"], Color4.Green);
+        }
+
+        private void RenderCheckpoint(Vector2 Position, int Index) {
+            RenderIcon(Position, (int)Textures["Key"], CheckpointsColors[Index]);
+        }
+
+        private void RenderPlayer() {
             GL.PushAttrib(AttribMask.AllAttribBits);
+
 
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
@@ -368,6 +413,6 @@ namespace Labyrinth {
             GL.Translate(-PlayerPosition.X, -PlayerPosition.Y, -WallsHeight / 2);
 
             GL.PopAttrib();
-       }
+        }
     }
 }
