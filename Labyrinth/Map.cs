@@ -13,6 +13,7 @@ namespace Labyrinth {
         protected CellType[,] Cells;
         public Vector2 StartPosition { get; protected set; }
         public Vector2 FinishPosition { get; protected set; }
+        public List<Vector2> Checkpoints { get; protected set; }
 
         public Map(int Width, int Height) {
             Rand = new Random();
@@ -87,9 +88,18 @@ namespace Labyrinth {
     			}
     		} while (PositionsStack.Count > 0);
 
+            var CheckpointsCount = 4; // TODO depends on difficulty level
+            Checkpoints = new List<Vector2>(CheckpointsCount);
+            for (var i = 0; i < CheckpointsCount; i++) {
+                do {
+                    Position = RandomPosition();
+                } while ((GetCell(Position) != CellType.Empty) || (StartPosition == Position) || Checkpoints.Contains(Position));
+                Checkpoints.Add(Position);
+            }
+
             do {
-                FinishPosition = new Vector2(Rand.Next(0, Width), Rand.Next(0, Height));
-            } while (GetCell(FinishPosition) != CellType.Empty);
+                FinishPosition = RandomPosition();
+            } while ((GetCell(FinishPosition) != CellType.Empty) || (StartPosition == FinishPosition) || Checkpoints.Contains(FinishPosition));
         }
 
         public int Width {
