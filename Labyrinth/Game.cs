@@ -10,6 +10,7 @@ using OpenTK.Input;
 namespace Labyrinth {
     class Game : GameWindowLayer {
 		private Random Rand;
+        private int TicksCounter = 0;
 
         public enum CameraMode {
             FirstPerson,
@@ -33,6 +34,8 @@ namespace Labyrinth {
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
 
+        private float IconMinSize = 0.35f, IconMaxSize = 0.40f;
+
         public Game() {
 			Rand = new Random();
 
@@ -55,6 +58,8 @@ namespace Labyrinth {
         }
 
         public override void Tick() {
+            ++TicksCounter;
+
             if (Window.Keyboard[Key.Left]) {
                 PlayerAngle -= PlayerTurnSpeed;
             }
@@ -285,7 +290,7 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.AllAttribBits);
             GL.PushMatrix();
 
-            var Size = WallsHeight / 2;
+            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 5f) / 2 - 1) + IconMaxSize;
 
             GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
@@ -299,7 +304,7 @@ namespace Labyrinth {
 
             GL.Rotate(-PlayerAngle, Vector3.UnitZ);
 
-            if (CameraMode.ThirdPerson == Camera) {
+            if (CameraMode.FirstPerson != Camera) {
                 GL.Rotate(-90, Vector3.UnitX);
             }
 
