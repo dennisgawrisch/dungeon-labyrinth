@@ -27,7 +27,7 @@ namespace Labyrinth {
 
         private float WallsHeight = 0.7f;
 
-        private int TextureWall;
+        private Hashtable Textures = new Hashtable();
         private Hashtable DisplayLists = new Hashtable();
 
         private float TorchLight = 0;
@@ -36,7 +36,8 @@ namespace Labyrinth {
         public Game() {
 			Rand = new Random();
 
-            TextureWall = LoadTexture("../../textures/wall.png");
+            Textures["Wall"] = LoadTexture("../../textures/wall.png");
+            Textures["Exit"] = LoadTexture("../../textures/exit.png");
 
             Map = new Map(40, 20); // TODO parametrize
 
@@ -166,6 +167,8 @@ namespace Labyrinth {
 
             RenderMap();
 
+            RenderExit(Map.FinishPosition);
+
             if ((CameraMode.ThirdPerson == Camera) || (CameraMode.BirdEye == Camera)) {
                 RenderPlayer();
             }
@@ -214,10 +217,6 @@ namespace Labyrinth {
                             if ((CameraMode.ThirdPerson != Camera) && (CameraMode.BirdEye != Camera)) {
                                 RenderCeiling(Position);
                             }
-
-                            if (Map.FinishPosition.Equals(Position)) {
-                                RenderExit(Position);
-                            }
                         }
                     }
                 }
@@ -230,7 +229,7 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, TextureWall);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(0, 0); GL.Vertex3(A.X, A.Y, z + WallsHeight);
@@ -250,7 +249,7 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, TextureWall);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(0, 1); GL.Vertex3(Position.X, Position.Y, 0);
@@ -266,7 +265,7 @@ namespace Labyrinth {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, TextureWall);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
 
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(0, 0); GL.Vertex3(Position.X, Position.Y, WallsHeight);
@@ -280,34 +279,36 @@ namespace Labyrinth {
 
         private void RenderExit(Vector2 Position) {
             GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushMatrix();
 
-            var PortalWidth = 0.7f;
+            var Size = WallsHeight / 2;
 
-            GL.Disable(EnableCap.Texture2D);
+            GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
+            GL.Disable(EnableCap.Fog);
             GL.Enable(EnableCap.Blend);
+
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Exit"]);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            GL.Color4(0, 1, 0, 0.3f);
+            GL.Translate(Position.X + 0.5, Position.Y + 0.5, WallsHeight / 2);
 
-            GL.Begin(BeginMode.QuadStrip);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, WallsHeight);
+            GL.Rotate(-PlayerAngle, Vector3.UnitZ);
+
+            if (CameraMode.ThirdPerson == Camera) {
+                GL.Rotate(-90, Vector3.UnitX);
+            }
+
+            GL.Color4(0, 1, 0, 0.7f);
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
+            GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
+            GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
+            GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
             GL.End();
 
-            GL.Begin(BeginMode.QuadStrip);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 - PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 - PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, WallsHeight);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, 0);
-            GL.Vertex3(Position.X + 0.5 + PortalWidth / 2, Position.Y + 0.5 + PortalWidth / 2, WallsHeight);
-            GL.End();
-
+            GL.PopMatrix();
             GL.PopAttrib();
         }
 
