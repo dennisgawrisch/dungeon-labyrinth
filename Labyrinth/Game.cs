@@ -37,6 +37,12 @@ namespace Labyrinth {
         private float TorchLightChangeDirection = +1;
 
         private float IconMinSize = 0.35f, IconMaxSize = 0.40f;
+        private struct IconBufferRecord {
+            public Vector2 Position;
+            public int Texture;
+            public Color4 Color;
+        }
+        private List<IconBufferRecord> IconsBuffer = new List<IconBufferRecord>(10);
 
         private float VisibilityDistance = 6f;
 
@@ -50,7 +56,7 @@ namespace Labyrinth {
             Textures["Exit"] = LoadTexture("../../textures/exit.png");
             Textures["Key"] = LoadTexture("../../textures/key.png");
 
-            Map = new Map(10, 10); // TODO parametrize
+            Map = new Map(1, 10); // TODO parametrize
 
             PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0); // Z-coordinate is set in Tick
 
@@ -187,7 +193,9 @@ namespace Labyrinth {
 
             GL.Enable(EnableCap.Fog);
             GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != Camera) ? 0.5f : 0.1f);
-            
+
+            IconsBuffer.Clear();
+
             RenderMap();
 
             for (var i = 0; i < Map.Checkpoints.Count; i++) { // TODO must fix problem when an icon overlaps another icon and hides it
@@ -201,6 +209,8 @@ namespace Labyrinth {
             if (CameraMode.ThirdPerson == Camera) {
                 RenderPlayer();
             }
+
+            RenderBufferedIcons();
         }
 
         private int LoadTexture(string Filename) {
@@ -337,8 +347,21 @@ namespace Labyrinth {
         }
 
         private void RenderIcon(Vector2 Position, int Texture, Color4 Color) {
+            var Icon = new IconBufferRecord();
+            Icon.Position = Position;
+            Icon.Texture = Texture;
+            Icon.Color = Color;
+            IconsBuffer.Add(Icon);
+        }
+
+        private int CompareBufferedIcons(IconBufferRecord A, IconBufferRecord B) {
+            var DistanceA = (A.Position - PlayerPosition.Xy).Length;
+            var DistanceB = (B.Position - PlayerPosition.Xy).Length;
+            return DistanceA < DistanceB ? -1 : +1; // using (int)(DistanceA - DistanceB) will lead to unexpected rounding problems
+        }
+
+        private void RenderBufferedIcons() {
             GL.PushAttrib(AttribMask.AllAttribBits);
-            GL.PushMatrix();
 
             var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 5f) / 2 - 1) + IconMaxSize;
 
@@ -347,28 +370,36 @@ namespace Labyrinth {
             GL.Disable(EnableCap.Fog);
             GL.Enable(EnableCap.Blend);
 
-            GL.BindTexture(TextureTarget.Texture2D, Texture);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            GL.Translate(Position.X + 0.5, Position.Y + 0.5, WallsHeight / 2);
+            IconsBuffer.Sort(CompareBufferedIcons);
+            IconsBuffer.Reverse();
 
-            GL.Rotate(-PlayerAngle, Vector3.UnitZ);
+            foreach (var Icon in IconsBuffer) {
+                GL.BindTexture(TextureTarget.Texture2D, Icon.Texture);
 
-            if (CameraMode.FirstPerson != Camera) {
-                GL.Rotate(-90, Vector3.UnitX);
+                GL.PushMatrix();
+
+                GL.Translate(Icon.Position.X + 0.5, Icon.Position.Y + 0.5, WallsHeight / 2);
+
+                GL.Rotate(-PlayerAngle, Vector3.UnitZ);
+
+                if (CameraMode.FirstPerson != Camera) {
+                    GL.Rotate(-90, Vector3.UnitX);
+                }
+
+                GL.Color4(Icon.Color.R, Icon.Color.G, Icon.Color.B, 0.7f);
+
+                GL.Begin(BeginMode.Quads);
+                GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
+                GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
+                GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
+                GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
+                GL.End();
+
+                GL.PopMatrix();
             }
 
-            Color.A = 0.7f;
-            GL.Color4(Color);
-
-            GL.Begin(BeginMode.Quads);
-            GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
-            GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
-            GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
-            GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
-            GL.End();
-
-            GL.PopMatrix();
             GL.PopAttrib();
         }
 
