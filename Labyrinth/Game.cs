@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using OpenTK;
@@ -36,6 +37,9 @@ namespace Labyrinth {
 
         private float IconMinSize = 0.35f, IconMaxSize = 0.40f;
 
+        private HashSet<int> CollectedCheckpoints = new HashSet<int>();
+        private Color4[] CheckpointsColors = { Color4.Red, Color4.SpringGreen, Color4.DodgerBlue, Color4.Yellow };
+
         public Game() {
 			Rand = new Random();
 
@@ -47,6 +51,7 @@ namespace Labyrinth {
 
             PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0.5f);
 
+            // making player to face empty cell on start
             for (PlayerAngle = 0; PlayerAngle < 360; PlayerAngle += 90) {
                 var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-PlayerAngle));
                 var PlayerMovementVector = Vector3.TransformVector(Vector3.UnitY, PlayerAngleMatrix);
@@ -97,7 +102,15 @@ namespace Labyrinth {
                 PlayerPosition = NewPlayerPosition;
             }
 
-            if (((int)(Math.Floor(PlayerPosition.X)) == Map.FinishPosition.X) && ((int)(Math.Floor(PlayerPosition.Y)) == Map.FinishPosition.Y)) {
+            var PlayerPositionCell = new Vector2((int)(Math.Floor(PlayerPosition.X)), (int)(Math.Floor(PlayerPosition.Y)));
+
+            for (var i = 0; i < Map.Checkpoints.Count; i++) {
+                if (!CollectedCheckpoints.Contains(i) && (PlayerPositionCell == Map.Checkpoints[i])) {
+                    CollectedCheckpoints.Add(i);
+                }
+            }
+
+            if ((PlayerPositionCell == Map.FinishPosition) && (CollectedCheckpoints.Count == Map.Checkpoints.Count)) {
                 Window.Exit(); // TODO
             }
         }
@@ -173,9 +186,12 @@ namespace Labyrinth {
 
             RenderMap();
 
-            for (var i = 0; i < Map.Checkpoints.Count; i++) {
-                RenderCheckpoint(Map.Checkpoints[i], i);
+            for (var i = 0; i < Map.Checkpoints.Count; i++) { // TODO must fix problem when an icon overlaps another icon and hides it
+                if (!CollectedCheckpoints.Contains(i)) {
+                    RenderCheckpoint(Map.Checkpoints[i], i);
+                }
             }
+
             RenderExit(Map.FinishPosition);
 
             if ((CameraMode.ThirdPerson == Camera) || (CameraMode.BirdEye == Camera)) {
@@ -327,8 +343,7 @@ namespace Labyrinth {
         }
 
         private void RenderCheckpoint(Vector2 Position, int Index) {
-            Color4[] Colors = { Color4.Red, Color4.SpringGreen, Color4.DodgerBlue, Color4.Yellow };
-            RenderIcon(Position, (int)Textures["Key"], Colors[Index]);
+            RenderIcon(Position, (int)Textures["Key"], CheckpointsColors[Index]);
         }
 
         private void RenderPlayer() {
