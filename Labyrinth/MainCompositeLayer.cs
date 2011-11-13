@@ -4,15 +4,28 @@ using OpenTK.Graphics.OpenGL;
 
 namespace Labyrinth {
     class MainCompositeLayer : GameWindowLayer {
-        protected MenuLayer Menu;
-        protected Game Game;
-        protected bool MenuIsActive;
+        public MenuLayer Menu;
+        public bool MenuIsActive;
+
+        private Game GameValue;
+        public Game Game {
+            get {
+                return GameValue;
+            }
+
+            set {
+                MenuIsActive = false;
+                Menu.CurrentMenu = Menu.MainMenu;
+                GameValue = value;
+                GameValue.Window = Window;
+            }
+        }
 
         public MainCompositeLayer(GameWindow Window) {
             this.Window = Window;
-            Menu = new MenuLayer(); Menu.Window = Window;
-            Game = new Game(); Game.Window = Window;
-            MenuIsActive = false;
+            Menu = new MenuLayer(this); 
+            Menu.Window = Window;
+            MenuIsActive = true;
         }
 
         public override void Tick() {

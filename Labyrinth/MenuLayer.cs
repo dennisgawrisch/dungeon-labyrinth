@@ -7,20 +7,27 @@ using Labyrinth.Gui.Menu;
 
 namespace Labyrinth {
     class MenuLayer : GameWindowLayer {
-        public Menu CurrentMenu, MainMenu, QuitConfirmationMenu;
+        private MainCompositeLayer MainLayer;
+        public Menu CurrentMenu, MainMenu;
+        private Menu NewGameMenu, QuitConfirmationMenu;
 
-        public MenuLayer() {
+        public MenuLayer(MainCompositeLayer Composite) {
+            MainLayer = Composite;
             ConstructMainMenu();
-            ConstructQuitConfirmationMenu();
             CurrentMenu = MainMenu;
         }
 
         public void ConstructMainMenu() {
             MainMenu = new Menu();
+            MainMenu.Exit += (Sender, E) => {
+                CurrentMenu = QuitConfirmationMenu;
+            };
 
             var NewGame = new Button("New game");
-            NewGame.Enabled = false;
             MainMenu.Add(NewGame);
+            NewGame.Enter += (Sender, E) => {
+                CurrentMenu = NewGameMenu;
+            };
 
             var Quit = new Button("Quit");
             MainMenu.Add(Quit);
@@ -28,13 +35,40 @@ namespace Labyrinth {
                 CurrentMenu = QuitConfirmationMenu;
             };
 
-            MainMenu.Exit += (Sender, E) => {
-                CurrentMenu = QuitConfirmationMenu;
+            ConstructNewGameMenu();
+            ConstructQuitConfirmationMenu();
+        }
+
+        public void ConstructNewGameMenu() {
+            NewGameMenu = new Menu();
+            NewGameMenu.Exit += (Sender, E) => {
+                CurrentMenu = MainMenu;
+            };
+
+            var Easy = new Button("Easy");
+            NewGameMenu.Add(Easy);
+            Easy.Enter += (Sender, E) => {
+                MainLayer.Game = new Game(Game.DifficultyLevel.Easy);
+            };
+
+            var Normal = new Button("Normal");
+            NewGameMenu.Add(Normal);
+            Normal.Enter += (Sender, E) => {
+                MainLayer.Game = new Game(Game.DifficultyLevel.Normal);
+            };
+
+            var Hard = new Button("Hard");
+            NewGameMenu.Add(Hard);
+            Hard.Enter += (Sender, E) => {
+                MainLayer.Game = new Game(Game.DifficultyLevel.Hard);
             };
         }
 
         public void ConstructQuitConfirmationMenu() {
             QuitConfirmationMenu = new Menu();
+            QuitConfirmationMenu.Exit += (Sender, E) => {
+                CurrentMenu = MainMenu;
+            };
 
             var Question = new Text("This is no true exit. Are you fleeing?");
             QuitConfirmationMenu.Add(Question);
@@ -48,10 +82,6 @@ namespace Labyrinth {
             var No = new Button("No");
             QuitConfirmationMenu.Add(No);
             No.Enter += (Sender, E) => {
-                CurrentMenu = MainMenu;
-            };
-
-            QuitConfirmationMenu.Exit += (Sender, E) => {
                 CurrentMenu = MainMenu;
             };
         }
