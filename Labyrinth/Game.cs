@@ -210,7 +210,7 @@ namespace Labyrinth {
 
             RenderMap();
 
-            for (var i = 0; i < Map.Checkpoints.Count; i++) { // TODO must fix problem when an icon overlaps another icon and hides it
+            for (var i = 0; i < Map.Checkpoints.Count; i++) {
                 if (!CollectedCheckpoints.Contains(i)) {
                     RenderCheckpoint(Map.Checkpoints[i], i);
                 }
