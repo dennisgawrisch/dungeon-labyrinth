@@ -242,6 +242,13 @@ namespace Labyrinth {
         }
 
         private void RenderMap() {
+            GL.PushAttrib(AttribMask.TextureBit);
+
+            GL.Enable(EnableCap.Texture2D);
+            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
+
+            GL.Begin(BeginMode.Quads);
+
             var Xmin = (int)Math.Floor(Math.Max(PlayerPosition.X - VisibilityDistance, 0));
             var Ymin = (int)Math.Floor(Math.Max(PlayerPosition.Y - VisibilityDistance, 0));
             var Xmax = (int)Math.Ceiling(Math.Min(PlayerPosition.X + VisibilityDistance, Map.Width - 1));
@@ -272,6 +279,10 @@ namespace Labyrinth {
                     }
                 }
             }
+
+            GL.End();
+
+            GL.PopAttrib();
         }
 
         private Vector3 VariousedPoint(Vector3 Position) {
@@ -287,13 +298,6 @@ namespace Labyrinth {
         }
 
         private void RenderWall(Vector2 A, Vector2 B) {
-            GL.PushAttrib(AttribMask.TextureBit);
-
-            GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
-
-            GL.Begin(BeginMode.Quads);
-
             var C = new Vector2((A.X + B.X) / 2f, (A.Y + B.Y) / 2f); // middlepoint
             Vector2[] P1 = { A, C };
             Vector2[] P2 = { C, B };
@@ -308,20 +312,9 @@ namespace Labyrinth {
                     GL.TexCoord2(M.Equals(A) ? 0 : 0.5, Z); GL.Vertex3(VariousedPoint(M.X, M.Y, Z));
                 }
             }
-
-            GL.End();
-
-            GL.PopAttrib();
         }
 
         private void RenderFloor(Vector2 P) {
-            GL.PushAttrib(AttribMask.TextureBit);
-
-            GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
-
-            GL.Begin(BeginMode.Quads);
-
             for (var X = P.X; X <= P.X + 0.5; X += 0.5f) {
                 for (var Y = P.Y; Y <= P.Y + 0.5; Y += 0.5f) {
                     GL.TexCoord2(X - P.X, Y - P.Y); GL.Vertex3(VariousedPoint(X, Y, 0));
@@ -330,20 +323,9 @@ namespace Labyrinth {
                     GL.TexCoord2(X - P.X, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X, Y + 0.5f, 0));
                 }
             }
-
-            GL.End();
-
-            GL.PopAttrib();
         }
 
         private void RenderCeiling(Vector2 P) {
-            GL.PushAttrib(AttribMask.TextureBit);
-
-            GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
-
-            GL.Begin(BeginMode.Quads);
-
             for (var X = P.X; X <= P.X + 0.5; X += 0.5f) {
                 for (var Y = P.Y; Y <= P.Y + 0.5; Y += 0.5f) {
                     GL.TexCoord2(X - P.X, Y - P.Y); GL.Vertex3(VariousedPoint(X, Y, WallsHeight));
@@ -352,10 +334,6 @@ namespace Labyrinth {
                     GL.TexCoord2(X - P.X, Y - P.Y + 0.5); GL.Vertex3(VariousedPoint(X, Y + 0.5f, WallsHeight));
                 }
             }
-
-            GL.End();
-
-            GL.PopAttrib();
         }
 
         private void RenderIcon(Vector2 Position, int Texture, Color4 Color) {
@@ -387,6 +365,8 @@ namespace Labyrinth {
             IconsBuffer.Sort(CompareBufferedIcons);
             IconsBuffer.Reverse();
 
+            GL.Begin(BeginMode.Quads);
+
             foreach (var Icon in IconsBuffer) {
                 GL.BindTexture(TextureTarget.Texture2D, Icon.Texture);
 
@@ -402,15 +382,15 @@ namespace Labyrinth {
 
                 GL.Color4(Icon.Color.R, Icon.Color.G, Icon.Color.B, 0.7f);
 
-                GL.Begin(BeginMode.Quads);
                 GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
                 GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
                 GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
                 GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
-                GL.End();
 
                 GL.PopMatrix();
             }
+
+            GL.End();
 
             GL.PopAttrib();
         }
