@@ -63,11 +63,11 @@ namespace Labyrinth {
             Textures["Key"] = LoadTexture("../../textures/key.png");
 
             if (DifficultyLevel.Easy == Difficulty) {
-                Map = new Map(Rand, 20, 20, 2);
+                Map = new Map(Rand, 10, 10, 2);
             } else if (DifficultyLevel.Normal == Difficulty) {
-                Map = new Map(Rand, 35, 35, 3);
+                Map = new Map(Rand, 20, 20, 3);
             } else if (DifficultyLevel.Hard == Difficulty) {
-                Map = new Map(Rand, 50, 50, 4);
+                Map = new Map(Rand, 30, 30, 4);
             }
 
             PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0); // Z-coordinate is set in Tick
@@ -365,8 +365,6 @@ namespace Labyrinth {
             IconsBuffer.Sort(CompareBufferedIcons);
             IconsBuffer.Reverse();
 
-            GL.Begin(BeginMode.Quads);
-
             foreach (var Icon in IconsBuffer) {
                 GL.BindTexture(TextureTarget.Texture2D, Icon.Texture);
 
@@ -382,15 +380,15 @@ namespace Labyrinth {
 
                 GL.Color4(Icon.Color.R, Icon.Color.G, Icon.Color.B, 0.7f);
 
+                GL.Begin(BeginMode.Quads);
                 GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
                 GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
                 GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
                 GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
+                GL.End();
 
                 GL.PopMatrix();
             }
-
-            GL.End();
 
             GL.PopAttrib();
         }
