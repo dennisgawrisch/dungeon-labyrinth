@@ -46,7 +46,7 @@ namespace Labyrinth.Gui {
 
         public Text(string Label) {
             this.Label = Label;
-            Font = new Font(new FontFamily(GenericFontFamilies.SansSerif), 50, GraphicsUnit.Pixel);
+            Font = new Font(new FontFamily(GenericFontFamilies.SansSerif), 30, GraphicsUnit.Pixel);
             Texture = GL.GenTexture();
         }
 
