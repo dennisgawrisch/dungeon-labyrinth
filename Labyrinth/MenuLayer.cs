@@ -8,7 +8,18 @@ using Labyrinth.Gui.Menu;
 namespace Labyrinth {
     class MenuLayer : GameWindowLayer {
         private MainCompositeLayer MainLayer;
-        public Menu CurrentMenu, MainMenu;
+        private Menu CurrentMenuValue;
+        public Menu CurrentMenu {
+            get {
+                return CurrentMenuValue;
+            }
+
+            set {
+                CurrentMenuValue = value;
+                CurrentMenuValue.ResetState();
+            }
+        }
+        public Menu MainMenu;
         private Menu NewGameMenu, HelpMenu, QuitConfirmationMenu;
 
         public MenuLayer(MainCompositeLayer Composite) {
