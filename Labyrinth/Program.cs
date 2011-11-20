@@ -27,6 +27,7 @@ namespace Labyrinth {
         protected override void OnLoad(EventArgs E) {
             base.OnLoad(E);
             WindowState = WindowState.Fullscreen;
+            CursorVisible = false;
             Layer = new MainCompositeLayer(this);
             Keys = Enum.GetValues(typeof(OpenTK.Input.Key));
         }
