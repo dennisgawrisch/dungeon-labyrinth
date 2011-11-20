@@ -4,20 +4,29 @@ using OpenTK.Input;
 
 namespace Labyrinth.Gui.Menu {
     class Menu : Element {
-        public List<Element> Items = new List<Element>();
+        protected List<Element> Items = new List<Element>();
         protected int? FocusedItemIndex;
         protected Control FocusedItem {
             get {
                 return FocusedItemIndex.HasValue ? (Items[FocusedItemIndex.Value] as Control) : null;
             }
+
+            set {
+                if (FocusedItemIndex.HasValue) {
+                    FocusedItem.Focused = false;
+                }
+
+                if (value == null) {
+                    FocusedItemIndex = null;
+                } else {
+                    FocusedItemIndex = Items.IndexOf((Element)value);
+                    FocusedItem.Focused = true;
+                }
+            }
         }
         const int ItemsSpacing = 6;
 
         public void Add(Element Item) {
-            if (!FocusedItemIndex.HasValue && (Item is Control) && (Item as Control).Enabled) {
-                FocusedItemIndex = Items.Count;
-                (Item as Control).Focused = true;
-            }
             Items.Add(Item);
         }
 
@@ -85,6 +94,16 @@ namespace Labyrinth.Gui.Menu {
                 FocusedItem.Focused = true;
             } else if (FocusedItemIndex.HasValue && FocusedItem.Enabled) {
                 FocusedItem.OnKeyPress(K);
+            }
+        }
+
+        public void ResetState() {
+            FocusedItem = null;
+            foreach (var Item in Items) {
+                if ((Item is Control) && (Item as Control).Enabled) {
+                    FocusedItem = Item as Control;
+                    break;
+                }
             }
         }
     }

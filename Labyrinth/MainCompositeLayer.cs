@@ -58,6 +58,9 @@ namespace Labyrinth {
                 }
             } else if (K.Equals(Key.Escape) && (Game != null) && (Menu.CurrentMenu == Menu.MainMenu)) {
                 MenuIsActive = !MenuIsActive;
+                if (MenuIsActive) {
+                    Menu.CurrentMenu.ResetState();
+                }
             } else {
                 if (MenuIsActive) {
                     Menu.OnKeyPress(K);
