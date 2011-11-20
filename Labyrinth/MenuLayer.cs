@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -9,7 +9,7 @@ namespace Labyrinth {
     class MenuLayer : GameWindowLayer {
         private MainCompositeLayer MainLayer;
         public Menu CurrentMenu, MainMenu;
-        private Menu NewGameMenu, QuitConfirmationMenu;
+        private Menu NewGameMenu, HelpMenu, QuitConfirmationMenu;
 
         public MenuLayer(MainCompositeLayer Composite) {
             MainLayer = Composite;
@@ -29,6 +29,12 @@ namespace Labyrinth {
                 CurrentMenu = NewGameMenu;
             };
 
+            var Help = new Button("Help");
+            MainMenu.Add(Help);
+            Help.Enter += (Sender, E) => {
+                CurrentMenu = HelpMenu;
+            };
+
             var Quit = new Button("Quit");
             MainMenu.Add(Quit);
             Quit.Enter += (Sender, E) => {
@@ -36,6 +42,7 @@ namespace Labyrinth {
             };
 
             ConstructNewGameMenu();
+            ConstructHelpMenu();
             ConstructQuitConfirmationMenu();
         }
 
@@ -64,14 +71,36 @@ namespace Labyrinth {
             };
         }
 
+        public void ConstructHelpMenu() {
+            HelpMenu = new Menu();
+            HelpMenu.Exit += (Sender, E) => {
+                CurrentMenu = MainMenu;
+            };
+
+            HelpMenu.Add(new Text("Use W A S D or arrow keys to move."));
+            HelpMenu.Add(new Text("Press C to toggle third person view."));
+            HelpMenu.Add(new Text("Press F11 or Alt + Enter to toggle fullscreen mode."));
+            HelpMenu.Add(new Text("You have to find exit from labyrinth."));
+            HelpMenu.Add(new Text("Collect all keys to unlock the exit."));
+            HelpMenu.Add(new Text("Make it before your torch goes out."));
+            HelpMenu.Add(new Text("Press F to leave marks (amount is limited)."));
+            HelpMenu.Add(new Text("Collect treasures to gain extra score."));
+            HelpMenu.Add(new Text("Avoid ghosts."));
+
+            var Back = new Button("Back");
+            HelpMenu.Add(Back);
+            Back.Enter += (Sender, E) => {
+                CurrentMenu = MainMenu;
+            };
+        }
+
         public void ConstructQuitConfirmationMenu() {
             QuitConfirmationMenu = new Menu();
             QuitConfirmationMenu.Exit += (Sender, E) => {
                 CurrentMenu = MainMenu;
             };
 
-            var Question = new Text("This is no true exit. Are you fleeing?");
-            QuitConfirmationMenu.Add(Question);
+            QuitConfirmationMenu.Add(new Text("This is no true exit. Are you fleeing?"));
 
             var Yes = new Button("Yes");
             QuitConfirmationMenu.Add(Yes);

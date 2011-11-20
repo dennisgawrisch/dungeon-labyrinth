@@ -11,7 +11,7 @@ namespace Labyrinth.Gui.Menu {
                 return FocusedItemIndex.HasValue ? (Items[FocusedItemIndex.Value] as Control) : null;
             }
         }
-        const int ItemsSpacing = 10;
+        const int ItemsSpacing = 6;
 
         public void Add(Element Item) {
             if (!FocusedItemIndex.HasValue && (Item is Control) && (Item as Control).Enabled) {
