@@ -55,12 +55,16 @@ namespace Labyrinth {
         private HashSet<int> CollectedCheckpoints = new HashSet<int>();
         private Color4[] CheckpointsColors = { Color4.Red, Color4.SpringGreen, Color4.DodgerBlue, Color4.Yellow };
 
+        private int MarksLeft = 10;
+        private List<Vector2> Marks = new List<Vector2>();
+
         public Game(DifficultyLevel Difficulty) {
             Rand = new Random();
 
             Textures["Wall"] = LoadTexture("../../textures/wall.png");
             Textures["Exit"] = LoadTexture("../../textures/exit.png");
             Textures["Key"] = LoadTexture("../../textures/key.png");
+            Textures["Mark"] = LoadTexture("../../textures/mark.png");
 
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
@@ -154,6 +158,11 @@ namespace Labyrinth {
                 } else {
                     Camera = CameraMode.FirstPerson;
                 }
+            } else if (K.Equals(Key.F)) {
+                if (MarksLeft > 0) {
+                    Marks.Add(new Vector2((float)Math.Floor(PlayerPosition.X), (float)Math.Floor(PlayerPosition.Y)));
+                    --MarksLeft;
+                }
             }
         }
 
@@ -217,6 +226,10 @@ namespace Labyrinth {
             }
 
             RenderExit(Map.FinishPosition);
+
+            foreach (var Mark in Marks) {
+                RenderMark(Mark);
+            }
 
             if (CameraMode.ThirdPerson == Camera) {
                 RenderPlayer();
@@ -399,6 +412,10 @@ namespace Labyrinth {
 
         private void RenderCheckpoint(Vector2 Position, int Index) {
             RenderIcon(Position, (int)Textures["Key"], CheckpointsColors[Index]);
+        }
+
+        private void RenderMark(Vector2 Position) {
+            RenderIcon(Position, (int)Textures["Mark"], Color4.MediumOrchid);
         }
 
         private void RenderPlayer() {
