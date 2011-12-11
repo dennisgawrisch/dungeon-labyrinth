@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -16,9 +15,6 @@ namespace Labyrinth {
 
         private GameWindowLayer Layer;
 
-        private Array Keys;
-        private HashSet<Key> PressedKeys = new HashSet<Key>();
-
         public Program()
             : base(800, 600, GraphicsMode.Default, "Labyrinth") {
             VSync = VSyncMode.On;
@@ -29,7 +25,7 @@ namespace Labyrinth {
             WindowState = WindowState.Fullscreen;
             CursorVisible = false;
             Layer = new MainCompositeLayer(this);
-            Keys = Enum.GetValues(typeof(OpenTK.Input.Key));
+            Keyboard.KeyDown += new EventHandler<KeyboardKeyEventArgs>(OnKeyDown);
         }
 
         protected override void OnResize(EventArgs E) {
@@ -39,17 +35,11 @@ namespace Labyrinth {
 
         protected override void OnUpdateFrame(FrameEventArgs E) {
             base.OnUpdateFrame(E);
-
             Layer.Tick();
+        }
 
-            foreach (OpenTK.Input.Key Key in Keys) {
-                if (Keyboard[Key]) {
-                    PressedKeys.Add(Key);
-                } else if (PressedKeys.Contains(Key)) {
-                    PressedKeys.Remove(Key);
-                    Layer.OnKeyPress(Key);
-                }
-            }
+        protected void OnKeyDown(object Sender, KeyboardKeyEventArgs E) {
+            Layer.OnKeyPress(E.Key);
         }
 
         protected override void OnRenderFrame(FrameEventArgs E) {
