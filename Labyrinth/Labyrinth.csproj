@@ -66,6 +66,7 @@
     <Compile Include="MenuLayer.cs" />
     <Compile Include="Gui\Control.cs" />
     <Compile Include="Gui\Menu\Text.cs" />
+    <Compile Include="Texture.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

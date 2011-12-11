@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
@@ -37,7 +35,7 @@ namespace Labyrinth {
         private float WallsXyVariation = 0.1f;
         private float PlayerModelSize = 0.3f;
 
-        private Hashtable Textures = new Hashtable();
+        private Texture TextureWall, TextureExit, TextureKey, TextureMark;
 
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
@@ -45,7 +43,7 @@ namespace Labyrinth {
         private float IconMinSize = 0.35f, IconMaxSize = 0.40f;
         private struct IconBufferRecord {
             public Vector2 Position;
-            public int Texture;
+            public Texture Texture;
             public Color4 Color;
         }
         private List<IconBufferRecord> IconsBuffer = new List<IconBufferRecord>(10);
@@ -61,10 +59,10 @@ namespace Labyrinth {
         public Game(DifficultyLevel Difficulty) {
             Rand = new Random();
 
-            Textures["Wall"] = LoadTexture("textures/wall.png");
-            Textures["Exit"] = LoadTexture("textures/exit.png");
-            Textures["Key"] = LoadTexture("textures/key.png");
-            Textures["Mark"] = LoadTexture("textures/mark.png");
+            TextureWall = new Texture(new Bitmap("textures/wall.png"));
+            TextureExit = new Texture(new Bitmap("textures/exit.png"));
+            TextureKey = new Texture(new Bitmap("textures/key.png"));
+            TextureMark = new Texture(new Bitmap("textures/mark.png"));
 
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
@@ -238,27 +236,11 @@ namespace Labyrinth {
             RenderBufferedIcons();
         }
 
-        private int LoadTexture(string Filename) {
-            var Bitmap = new Bitmap(Filename);
-
-            var Texture = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, Texture);
-
-            var BitmapData = Bitmap.LockBits(new Rectangle(0, 0, Bitmap.Width, Bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, BitmapData.Width, BitmapData.Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, BitmapData.Scan0);
-            Bitmap.UnlockBits(BitmapData);
-
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
-            GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
-            return Texture;
-        }
-
         private void RenderMap() {
             GL.PushAttrib(AttribMask.TextureBit);
 
             GL.Enable(EnableCap.Texture2D);
-            GL.BindTexture(TextureTarget.Texture2D, (int)Textures["Wall"]);
+            TextureWall.Bind();
 
             GL.Begin(BeginMode.Quads);
 
@@ -349,7 +331,7 @@ namespace Labyrinth {
             }
         }
 
-        private void RenderIcon(Vector2 Position, int Texture, Color4 Color) {
+        private void RenderIcon(Vector2 Position, Texture Texture, Color4 Color) {
             var Icon = new IconBufferRecord();
             Icon.Position = Position;
             Icon.Texture = Texture;
@@ -379,7 +361,7 @@ namespace Labyrinth {
             IconsBuffer.Reverse();
 
             foreach (var Icon in IconsBuffer) {
-                GL.BindTexture(TextureTarget.Texture2D, Icon.Texture);
+                Icon.Texture.Bind();
 
                 GL.PushMatrix();
 
@@ -407,15 +389,15 @@ namespace Labyrinth {
         }
 
         private void RenderExit(Vector2 Position) {
-            RenderIcon(Position, (int)Textures["Exit"], (CollectedCheckpoints.Count == Map.Checkpoints.Count) ? Color4.ForestGreen : Color4.Red);
+            RenderIcon(Position, TextureExit, (CollectedCheckpoints.Count == Map.Checkpoints.Count) ? Color4.ForestGreen : Color4.Red);
         }
 
         private void RenderCheckpoint(Vector2 Position, int Index) {
-            RenderIcon(Position, (int)Textures["Key"], CheckpointsColors[Index]);
+            RenderIcon(Position, TextureKey, CheckpointsColors[Index]);
         }
 
         private void RenderMark(Vector2 Position) {
-            RenderIcon(Position, (int)Textures["Mark"], Color4.MediumOrchid);
+            RenderIcon(Position, TextureMark, Color4.MediumOrchid);
         }
 
         private void RenderPlayer() {
