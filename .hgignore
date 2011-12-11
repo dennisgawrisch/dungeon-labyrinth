@@ -3,3 +3,4 @@ syntax: glob
 Labyrinth/bin/*
 Labyrinth/obj/*
 *.pidb
+*.userprefs
