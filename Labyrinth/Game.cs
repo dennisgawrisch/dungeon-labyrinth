@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Text;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using Labyrinth.Gui;
 
 namespace Labyrinth {
     class Game : GameWindowLayer {
@@ -56,6 +58,14 @@ namespace Labyrinth {
         private int MarksLeft = 10;
         private List<Vector2> Marks = new List<Vector2>();
 
+        private enum GameStateEnum {
+            Playing,
+            Win
+        }
+        private GameStateEnum GameState;
+        private int GameStateLastChangeTicksCounter = 0;
+        private Text WinLabel;
+
         public Game(DifficultyLevel Difficulty) {
             Rand = new Random();
 
@@ -63,6 +73,10 @@ namespace Labyrinth {
             TextureExit = new Texture(new Bitmap("textures/exit.png"));
             TextureKey = new Texture(new Bitmap("textures/key.png"));
             TextureMark = new Texture(new Bitmap("textures/mark.png"));
+
+            WinLabel = new Text("You win!");
+            WinLabel.Color = Color4.White;
+            WinLabel.Font = new Font(new FontFamily(GenericFontFamilies.SansSerif), 50, GraphicsUnit.Pixel);
 
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
@@ -83,83 +97,90 @@ namespace Labyrinth {
                     break;
                 }
             }
+
+            GameState = GameStateEnum.Playing;
         }
 
         public override void Tick() {
             ++TicksCounter;
 
-            if (Window.Keyboard[Key.Left]) {
-                PlayerAngle -= PlayerTurnSpeed;
-            }
-            if (Window.Keyboard[Key.Right]) {
-                PlayerAngle += PlayerTurnSpeed;
-            }
-
-            var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-PlayerAngle));
-            var PlayerMovementVector = new Vector3(0, 0, 0);
-
-            if (Window.Keyboard[Key.Up] || Window.Keyboard[Key.W]) {
-                PlayerMovementVector.Y += PlayerMovementSpeed;
-            }
-            if (Window.Keyboard[Key.Down] || Window.Keyboard[Key.S]) {
-                PlayerMovementVector.Y -= PlayerMovementSpeed;
-            }
-            if (Window.Keyboard[Key.A]) {
-                PlayerMovementVector.X -= PlayerMovementSpeed;
-            }
-            if (Window.Keyboard[Key.D]) {
-                PlayerMovementVector.X += PlayerMovementSpeed;
-            }
-
-            PlayerMovementVector = Vector3.TransformVector(PlayerMovementVector, PlayerAngleMatrix);
-            var AdditionalMovementVector = PlayerMovementVector;
-            AdditionalMovementVector.NormalizeFast();
-            AdditionalMovementVector = Vector3.Multiply(AdditionalMovementVector, (float)Math.Max(PlayerModelSize, WallsXyVariation * Math.Sqrt(2)));
-
-            var NewPlayerPosition = PlayerPosition;
-            NewPlayerPosition.X += PlayerMovementVector.X;
-            var AdditionalPosition = NewPlayerPosition;
-            AdditionalPosition.X += AdditionalMovementVector.X;
-            if ((Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) && (Map.CellType.Empty == Map.GetCell(AdditionalPosition.Xy))) {
-                PlayerPosition = NewPlayerPosition;
-            }
-
-            NewPlayerPosition = PlayerPosition;
-            NewPlayerPosition.Y += PlayerMovementVector.Y;
-            AdditionalPosition = NewPlayerPosition;
-            AdditionalPosition.Y += AdditionalMovementVector.Y;
-            if ((Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) && (Map.CellType.Empty == Map.GetCell(AdditionalPosition.Xy))) {
-                PlayerPosition = NewPlayerPosition;
-            }
-
-            var FloorPosition = this.VariousedPoint(PlayerPosition.X, PlayerPosition.Y, 0);
-            PlayerPosition.Z = FloorPosition.Z + 0.5f;
-
-            var PlayerPositionCell = new Vector2((int)(Math.Floor(PlayerPosition.X)), (int)(Math.Floor(PlayerPosition.Y)));
-
-            for (var i = 0; i < Map.Checkpoints.Count; i++) {
-                if (!CollectedCheckpoints.Contains(i) && (PlayerPositionCell == Map.Checkpoints[i])) {
-                    CollectedCheckpoints.Add(i);
+            if (GameStateEnum.Playing == GameState) {
+                if (Window.Keyboard[Key.Left]) {
+                    PlayerAngle -= PlayerTurnSpeed;
                 }
-            }
+                if (Window.Keyboard[Key.Right]) {
+                    PlayerAngle += PlayerTurnSpeed;
+                }
 
-            if ((PlayerPositionCell == Map.FinishPosition) && (CollectedCheckpoints.Count == Map.Checkpoints.Count)) {
-                Window.Exit(); // TODO
+                var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-PlayerAngle));
+                var PlayerMovementVector = new Vector3(0, 0, 0);
+
+                if (Window.Keyboard[Key.Up] || Window.Keyboard[Key.W]) {
+                    PlayerMovementVector.Y += PlayerMovementSpeed;
+                }
+                if (Window.Keyboard[Key.Down] || Window.Keyboard[Key.S]) {
+                    PlayerMovementVector.Y -= PlayerMovementSpeed;
+                }
+                if (Window.Keyboard[Key.A]) {
+                    PlayerMovementVector.X -= PlayerMovementSpeed;
+                }
+                if (Window.Keyboard[Key.D]) {
+                    PlayerMovementVector.X += PlayerMovementSpeed;
+                }
+
+                PlayerMovementVector = Vector3.TransformVector(PlayerMovementVector, PlayerAngleMatrix);
+                var AdditionalMovementVector = PlayerMovementVector;
+                AdditionalMovementVector.NormalizeFast();
+                AdditionalMovementVector = Vector3.Multiply(AdditionalMovementVector, (float)Math.Max(PlayerModelSize, WallsXyVariation * Math.Sqrt(2)));
+
+                var NewPlayerPosition = PlayerPosition;
+                NewPlayerPosition.X += PlayerMovementVector.X;
+                var AdditionalPosition = NewPlayerPosition;
+                AdditionalPosition.X += AdditionalMovementVector.X;
+                if ((Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) && (Map.CellType.Empty == Map.GetCell(AdditionalPosition.Xy))) {
+                    PlayerPosition = NewPlayerPosition;
+                }
+
+                NewPlayerPosition = PlayerPosition;
+                NewPlayerPosition.Y += PlayerMovementVector.Y;
+                AdditionalPosition = NewPlayerPosition;
+                AdditionalPosition.Y += AdditionalMovementVector.Y;
+                if ((Map.CellType.Empty == Map.GetCell(NewPlayerPosition.Xy)) && (Map.CellType.Empty == Map.GetCell(AdditionalPosition.Xy))) {
+                    PlayerPosition = NewPlayerPosition;
+                }
+
+                var FloorPosition = this.VariousedPoint(PlayerPosition.X, PlayerPosition.Y, 0);
+                PlayerPosition.Z = FloorPosition.Z + 0.5f;
+
+                var PlayerPositionCell = new Vector2((int)(Math.Floor(PlayerPosition.X)), (int)(Math.Floor(PlayerPosition.Y)));
+
+                for (var i = 0; i < Map.Checkpoints.Count; i++) {
+                    if (!CollectedCheckpoints.Contains(i) && (PlayerPositionCell == Map.Checkpoints[i])) {
+                        CollectedCheckpoints.Add(i);
+                    }
+                }
+
+                if ((PlayerPositionCell == Map.FinishPosition) && (CollectedCheckpoints.Count == Map.Checkpoints.Count)) {
+                    GameState = GameStateEnum.Win;
+                    GameStateLastChangeTicksCounter = TicksCounter;
+                }
             }
         }
 
         public override void OnKeyPress(Key K) {
-            if (K.Equals(Key.C)) {
-                if (CameraMode.FirstPerson == Camera) {
-                    Camera = CameraMode.ThirdPerson;
-
-                } else {
-                    Camera = CameraMode.FirstPerson;
-                }
-            } else if (K.Equals(Key.F)) {
-                if (MarksLeft > 0) {
-                    Marks.Add(new Vector2((float)Math.Floor(PlayerPosition.X), (float)Math.Floor(PlayerPosition.Y)));
-                    --MarksLeft;
+            if (GameStateEnum.Playing == GameState) {
+                if (K.Equals(Key.C)) {
+                    if (CameraMode.FirstPerson == Camera) {
+                        Camera = CameraMode.ThirdPerson;
+    
+                    } else {
+                        Camera = CameraMode.FirstPerson;
+                    }
+                } else if (K.Equals(Key.F)) {
+                    if (MarksLeft > 0) {
+                        Marks.Add(new Vector2((float)Math.Floor(PlayerPosition.X), (float)Math.Floor(PlayerPosition.Y)));
+                        --MarksLeft;
+                    }
                 }
             }
         }
@@ -195,11 +216,13 @@ namespace Labyrinth {
             var TorchLightMax = 0.20f;
             var TorchLightChangeSpeed = 0.007f;
 
-            TorchLight += Rand.Next(-100, +100) / 100f * TorchLightChangeSpeed * TorchLightChangeDirection;
-            TorchLight = Math.Max(TorchLight, TorchLightMin);
-            TorchLight = Math.Min(TorchLight, TorchLightMax);
-            if ((TorchLightMin == TorchLight) || (TorchLightMax == TorchLight) || (Rand.Next(100) < 30)) {
-                TorchLightChangeDirection = -TorchLightChangeDirection;
+            if (GameStateEnum.Playing == GameState) {
+                TorchLight += Rand.Next(-100, +100) / 100f * TorchLightChangeSpeed * TorchLightChangeDirection;
+                TorchLight = Math.Max(TorchLight, TorchLightMin);
+                TorchLight = Math.Min(TorchLight, TorchLightMax);
+                if ((TorchLightMin == TorchLight) || (TorchLightMax == TorchLight) || (Rand.Next(100) < 30)) {
+                    TorchLightChangeDirection = -TorchLightChangeDirection;
+                }
             }
 
             GL.Enable(EnableCap.Lighting);
@@ -234,6 +257,10 @@ namespace Labyrinth {
             }
 
             RenderBufferedIcons();
+
+            if (GameStateEnum.Win == GameState) {
+                RenderWinScreen();
+            }
         }
 
         private void RenderMap() {
@@ -422,6 +449,44 @@ namespace Labyrinth {
 
             GL.Rotate(PlayerAngle, Vector3.UnitZ);
             GL.Translate(-PlayerPosition.X, -PlayerPosition.Y, -WallsHeight / 2);
+
+            GL.PopAttrib();
+        }
+
+        private void RenderWinScreen() {
+            GL.PushAttrib(AttribMask.AllAttribBits);
+
+            GL.Disable(EnableCap.DepthTest);
+            GL.Disable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.Lighting);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            var Projection = Matrix4.CreateOrthographic(-(float)Window.Width, -(float)Window.Height, -1, 1);
+            GL.MatrixMode(MatrixMode.Projection);
+            GL.LoadMatrix(ref Projection);
+            GL.Translate(Window.Width / 2, -Window.Height / 2, 0);
+
+            var Modelview = Matrix4.LookAt(Vector3.Zero, Vector3.UnitZ, Vector3.UnitY);
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.LoadMatrix(ref Modelview);
+
+            var Ticks = TicksCounter - GameStateLastChangeTicksCounter;
+            var MaxTicks = 42;
+            GL.Color4(new Color4(0, 0, 0, (float)Math.Min(Ticks, MaxTicks) / MaxTicks));
+
+            GL.Begin(BeginMode.Quads);
+            GL.Vertex2(0, 0);
+            GL.Vertex2(Window.Width, 0);
+            GL.Vertex2(Window.Width, Window.Height);
+            GL.Vertex2(0, Window.Height);
+            GL.End();
+
+            if (Ticks >= MaxTicks) {
+                WinLabel.Left = (Window.Width - WinLabel.Width.Value) / 2;
+                WinLabel.Top = (Window.Height - WinLabel.Height.Value) / 2;
+                WinLabel.Render();
+            }
 
             GL.PopAttrib();
         }
