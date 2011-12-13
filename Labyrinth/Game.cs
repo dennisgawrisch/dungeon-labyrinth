@@ -58,6 +58,8 @@ namespace Labyrinth {
         private int MarksLeft = 10;
         private List<Vector2> Marks = new List<Vector2>();
 
+        private Ghost[] Ghosts;
+
         private enum GameStateEnum {
             Playing,
             Win
@@ -80,10 +82,17 @@ namespace Labyrinth {
 
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
+                Ghosts = new Ghost[1];
             } else if (DifficultyLevel.Normal == Difficulty) {
                 Map = new Map(Rand, 20, 20, 3);
+                Ghosts = new Ghost[3];
             } else if (DifficultyLevel.Hard == Difficulty) {
                 Map = new Map(Rand, 30, 30, 4);
+                Ghosts = new Ghost[5];
+            }
+
+            for (var i = 0; i < Ghosts.Length; i++) {
+                Ghosts[i] = new Ghost(Map);
             }
 
             PlayerPosition = new Vector3(Map.StartPosition.X + 0.5f, Map.StartPosition.Y + 0.5f, 0); // Z-coordinate is set in Tick
@@ -105,6 +114,10 @@ namespace Labyrinth {
             ++TicksCounter;
 
             if (GameStateEnum.Playing == GameState) {
+                foreach (var Ghost in Ghosts) {
+                    Ghost.Move();
+                }
+
                 if (Window.Keyboard[Key.Left]) {
                     PlayerAngle -= PlayerTurnSpeed;
                 }
@@ -159,6 +172,8 @@ namespace Labyrinth {
                         CollectedCheckpoints.Add(i);
                     }
                 }
+
+                // TODO check for ghosts
 
                 if ((PlayerPositionCell == Map.FinishPosition) && (CollectedCheckpoints.Count == Map.Checkpoints.Count)) {
                     GameState = GameStateEnum.Win;
@@ -254,6 +269,10 @@ namespace Labyrinth {
 
             if (CameraMode.ThirdPerson == Camera) {
                 RenderPlayer();
+            }
+
+            foreach (var Ghost in Ghosts) { // TODO make buffer (and merge with icons’ buffer) for the sake of transparency
+                RenderGhost(Ghost);
             }
 
             RenderBufferedIcons();
@@ -425,6 +444,22 @@ namespace Labyrinth {
 
         private void RenderMark(Vector2 Position) {
             RenderIcon(Position, TextureMark, Color4.MediumOrchid);
+        }
+
+        private void RenderGhost(Ghost Ghost) {
+            GL.PushMatrix();
+
+            GL.Translate(Ghost.Position.X + 0.5, Ghost.Position.Y + 0.5, WallsHeight / 2);
+
+            if (CameraMode.FirstPerson == Camera) {
+                GL.Rotate(-PlayerAngle, Vector3.UnitZ);
+            } else {
+                GL.Rotate(-90, Vector3.UnitX);
+            }
+
+            Ghost.Render(CameraMode.FirstPerson == Camera);
+
+            GL.PopMatrix();
         }
 
         private void RenderPlayer() {
