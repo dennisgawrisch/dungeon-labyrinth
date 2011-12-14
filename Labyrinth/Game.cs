@@ -52,7 +52,7 @@ namespace Labyrinth {
 
         private float VisibilityDistance = 6f;
 
-        private HashSet<int> CollectedCheckpoints = new HashSet<int>();
+        private List<int> CollectedCheckpoints = new List<int>();
         private Color4[] CheckpointsColors = { Color4.OrangeRed, Color4.Aquamarine, Color4.DodgerBlue, Color4.Yellow };
 
         private int MarksLeft = 10;
