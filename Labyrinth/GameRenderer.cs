@@ -10,8 +10,7 @@ using Labyrinth.Gui;
 namespace Labyrinth {
     class GameRenderer {
         private Game Game;
-        private Random Rand;
-        private int TicksCounter = 0;
+        private Random Rand = new Random();
 
         public enum CameraMode {
             FirstPerson,
@@ -42,12 +41,11 @@ namespace Labyrinth {
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
 
-        private int FadeOutCounter = 0;
+        private int? FadeOutStarted = null;
         private const int FadeOutLength = 42;
 
         public GameRenderer(Game Game) {
             this.Game = Game;
-            Rand = new Random();
 
             TextureWall = new Texture(new Bitmap("textures/wall.png"));
             TextureExit = new Texture(new Bitmap("textures/exit.png"));
@@ -141,12 +139,7 @@ namespace Labyrinth {
 
             if (Game.StateEnum.Win == Game.State) {
                 RenderWinScreen(Window);
-                ++FadeOutCounter;
-            } else {
-                FadeOutCounter = 0;
             }
-
-            ++TicksCounter;
         }
 
         private void RenderMap() {
@@ -261,7 +254,7 @@ namespace Labyrinth {
         private void RenderBufferedIcons() {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
-            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 10f) / 2 - 1) + IconMaxSize;
+            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(Game.TicksCounter / 10f) / 2 - 1) + IconMaxSize;
 
             GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
@@ -391,6 +384,11 @@ namespace Labyrinth {
         }
 
         private void RenderWinScreen(GameWindow Window) {
+            if (!FadeOutStarted.HasValue) {
+                FadeOutStarted = Game.TicksCounter;
+            }
+            var FadeOutCounter = Game.TicksCounter - FadeOutStarted.Value;
+
             GL.PushAttrib(AttribMask.AllAttribBits);
 
             GL.Disable(EnableCap.DepthTest);

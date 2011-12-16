@@ -6,7 +6,7 @@ using OpenTK.Input;
 
 namespace Labyrinth {
     class Game : GameWindowLayer {
-        private Random Rand;
+        private Random Rand = new Random();
 
         public enum DifficultyLevel {
             Easy,
@@ -27,11 +27,11 @@ namespace Labyrinth {
         }
         public StateEnum State;
 
+        public int TicksCounter { get; protected set; }
+
         private GameRenderer Renderer;
 
         public Game(DifficultyLevel Difficulty) {
-            Rand = new Random();
-
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
                 Ghosts = new Ghost[1];
@@ -53,6 +53,7 @@ namespace Labyrinth {
         }
 
         public override void Tick() {
+            ++TicksCounter;
             var TicksPerSecond = (float)Window.TargetUpdateFrequency;
 
             if (StateEnum.Playing == State) {
