@@ -25,9 +25,11 @@ namespace Labyrinth {
         private const float PlayerModelSize = 0.3f;
         private const float IconMinSize = 0.35f, IconMaxSize = 0.40f;
         private const float VisibilityDistance = 6f;
+        private const float GhostSize = 0.7f;
 
-        private Texture TextureWall, TextureExit, TextureKey, TextureMark;
+        private Texture TextureWall, TextureExit, TextureKey, TextureMark, TextureGhostSide, TextureGhostTop;
         private Color4[] CheckpointsColors = { Color4.OrangeRed, Color4.Aquamarine, Color4.DodgerBlue, Color4.Yellow };
+        private int GhostFramesCount;
         private Text WinLabel;
 
         private struct IconBufferRecord {
@@ -51,6 +53,10 @@ namespace Labyrinth {
             TextureExit = new Texture(new Bitmap("textures/exit.png"));
             TextureKey = new Texture(new Bitmap("textures/key.png"));
             TextureMark = new Texture(new Bitmap("textures/mark.png"));
+            TextureGhostSide = new Texture(new Bitmap("textures/ghost.png"));
+            TextureGhostTop = new Texture(new Bitmap("textures/ghost-from-top.png"));
+
+            GhostFramesCount = (int)(TextureGhostSide.Width / TextureGhostSide.Height);
 
             WinLabel = new Text("You win!");
             WinLabel.Color = Color4.White;
@@ -125,6 +131,10 @@ namespace Labyrinth {
 
             if (CameraMode.ThirdPerson == Camera) {
                 RenderPlayer();
+            }
+
+            foreach (var Ghost in Game.Ghosts) { // TODO make buffer (and merge with icons’ buffer) for the sake of transparency
+                RenderGhost(Ghost);
             }
 
             RenderBufferedIcons();
@@ -301,6 +311,57 @@ namespace Labyrinth {
 
         private void RenderMark(Vector2 Position) {
             RenderIcon(Position, TextureMark, Color4.MediumOrchid);
+        }
+
+        private void RenderGhost(Ghost Ghost) {
+            GL.PushMatrix();
+
+            GL.Translate(Ghost.Position.X + 0.5, Ghost.Position.Y + 0.5, WallsHeight / 2);
+
+            if (CameraMode.FirstPerson == Camera) {
+                GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
+            } else {
+                GL.Rotate(-90, Vector3.UnitX);
+            }
+
+            GL.PushAttrib(AttribMask.AllAttribBits);
+
+            GL.Enable(EnableCap.Texture2D);
+            GL.Disable(EnableCap.Lighting);
+            GL.Disable(EnableCap.Fog);
+            GL.Enable(EnableCap.Blend);
+
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
+            if (CameraMode.FirstPerson == Camera) {
+                TextureGhostSide.Bind();
+            } else {
+                TextureGhostTop.Bind();
+            }
+
+            var AnimationFrame = Rand.Next(GhostFramesCount);
+
+            GL.Color4(new Color4(1f, 1f, 1f, 1f));
+
+            GL.Begin(BeginMode.Quads);
+
+            GL.TexCoord2((AnimationFrame - 1) / (float)GhostFramesCount, 1);
+            GL.Vertex3(-GhostSize / 2, 0, -GhostSize / 2);
+
+            GL.TexCoord2((AnimationFrame - 1) / (float)GhostFramesCount, 0);
+            GL.Vertex3(-GhostSize / 2, 0, GhostSize / 2);
+
+            GL.TexCoord2(AnimationFrame / (float)GhostFramesCount, 0);
+            GL.Vertex3(GhostSize / 2, 0, GhostSize / 2);
+
+            GL.TexCoord2(AnimationFrame / (float)GhostFramesCount, 1);
+            GL.Vertex3(GhostSize / 2, 0, -GhostSize / 2);
+
+            GL.End();
+
+            GL.PopAttrib();
+
+            GL.PopMatrix();
         }
 
         private void RenderPlayer() {

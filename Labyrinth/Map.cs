@@ -129,7 +129,7 @@ namespace Labyrinth {
             SetCell(Position.X, Position.Y, CellType);
         }
 
-        protected Position RandomPosition() {
+        public Position RandomPosition() {
             return new Position(Rand.Next(0, Width), Rand.Next(0, Height));
         }
     }
