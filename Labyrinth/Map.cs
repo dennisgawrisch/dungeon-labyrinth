@@ -11,9 +11,9 @@ namespace Labyrinth {
 
         protected Random Rand;
         protected CellType[,] Cells;
-        public Vector2 StartPosition { get; protected set; }
-        public Vector2 FinishPosition { get; protected set; }
-        public List<Vector2> Checkpoints { get; protected set; }
+        public Position StartPosition { get; protected set; }
+        public Position FinishPosition { get; protected set; }
+        public List<Position> Checkpoints { get; protected set; }
 
         public Map(Random Randomizer, int Width, int Height, int CheckpointsCount) {
             Rand = Randomizer;
@@ -33,7 +33,7 @@ namespace Labyrinth {
             StartPosition = RandomPosition();
 
     		var Position = StartPosition;
-    		var PositionsStack = new Stack<Vector2>(Width * Height);
+    		var PositionsStack = new Stack<Position>(Width * Height);
     		PositionsStack.Push(Position);
     		var Direction = Vector2.UnitY;
 
@@ -49,12 +49,12 @@ namespace Labyrinth {
     					Direction = Direction.PerpendicularRight;
     				}
     
-    				var Next = Vector2.Add(Position, Direction);
-    				var LeftToNext = Vector2.Add(Next, Direction.PerpendicularLeft);
-    				var RightToNext = Vector2.Add(Next, Direction.PerpendicularRight);
-    				var NextNext = Vector2.Add(Next, Direction);
-    				var LeftToNextNext = Vector2.Add(NextNext, Direction.PerpendicularLeft);
-    				var RightToNextNext = Vector2.Add(NextNext, Direction.PerpendicularRight);
+    				var Next = (Position)(Vector2.Add(Position, Direction));
+    				var LeftToNext = (Position)(Vector2.Add(Next, Direction.PerpendicularLeft));
+    				var RightToNext = (Position)(Vector2.Add(Next, Direction.PerpendicularRight));
+    				var NextNext = (Position)(Vector2.Add(Next, Direction));
+    				var LeftToNextNext = (Position)(Vector2.Add(NextNext, Direction.PerpendicularLeft));
+    				var RightToNextNext = (Position)(Vector2.Add(NextNext, Direction.PerpendicularRight));
 
                     var WithMapBounds = (
                         (0 <= Next.X) && (Next.X < Width)
@@ -88,7 +88,7 @@ namespace Labyrinth {
     			}
     		} while (PositionsStack.Count > 0);
 
-            Checkpoints = new List<Vector2>(CheckpointsCount);
+            Checkpoints = new List<Position>(CheckpointsCount);
             for (var i = 0; i < CheckpointsCount; i++) {
                 do {
                     Position = RandomPosition();
@@ -117,20 +117,20 @@ namespace Labyrinth {
             }
         }
 
-        public CellType GetCell(Vector2 Position) {
-            return GetCell((int)(Math.Floor(Position.X)), (int)(Math.Floor(Position.Y)));
+        public CellType GetCell(Position Position) {
+            return GetCell(Position.X, Position.Y);
         }
 
-        protected void SetCell(int X, int Y, CellType cellType) {
-            Cells[X, Y] = cellType;
+        protected void SetCell(int X, int Y, CellType CellType) {
+            Cells[X, Y] = CellType;
         }
 
-        protected void SetCell(Vector2 Position, CellType cellType) {
-            SetCell((int)(Math.Floor(Position.X)), (int)(Math.Floor(Position.Y)), cellType);
+        protected void SetCell(Position Position, CellType CellType) {
+            SetCell(Position.X, Position.Y, CellType);
         }
 
-        protected Vector2 RandomPosition() {
-            return new Vector2(Rand.Next(0, Width), Rand.Next(0, Height));
+        public Position RandomPosition() {
+            return new Position(Rand.Next(0, Width), Rand.Next(0, Height));
         }
     }
 }
