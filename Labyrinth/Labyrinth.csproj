@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="GameRenderer.cs" />
     <Compile Include="GameWindowLayer.cs" />
+    <Compile Include="Ghost.cs" />
     <Compile Include="Gui\Text.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Position.cs" />
@@ -108,6 +109,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="textures\exit.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="textures\ghost-from-top.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="textures\ghost.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="textures\key.png">

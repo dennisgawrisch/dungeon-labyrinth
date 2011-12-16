@@ -19,6 +19,7 @@ namespace Labyrinth {
         public HashSet<int> CollectedCheckpoints = new HashSet<int>();
         public int MarksLeft = 10;
         public List<Position> Marks = new List<Position>();
+        public Ghost[] Ghosts;
 
         public enum StateEnum {
             Playing,
@@ -33,10 +34,17 @@ namespace Labyrinth {
 
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
+                Ghosts = new Ghost[1];
             } else if (DifficultyLevel.Normal == Difficulty) {
                 Map = new Map(Rand, 20, 20, 3);
+                Ghosts = new Ghost[3];
             } else if (DifficultyLevel.Hard == Difficulty) {
                 Map = new Map(Rand, 30, 30, 4);
+                Ghosts = new Ghost[5];
+            }
+
+            for (var i = 0; i < Ghosts.Length; i++) {
+                Ghosts[i] = new Ghost(Map);
             }
 
             Player = new Player(Map);
@@ -46,7 +54,12 @@ namespace Labyrinth {
 
         public override void Tick() {
             var TicksPerSecond = (float)Window.TargetUpdateFrequency;
+
             if (StateEnum.Playing == State) {
+                foreach (var Ghost in Ghosts) {
+                    Ghost.Move(1 / TicksPerSecond);
+                }
+
                 if (Window.Keyboard[Key.Left]) {
                     Player.Angle -= Player.TurnSpeed / TicksPerSecond;
                 }

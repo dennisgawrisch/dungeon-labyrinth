@@ -23,15 +23,15 @@ namespace Labyrinth {
                     (int)(Position.X + Math.Cos(MathHelper.DegreesToRadians(90 - Angle))),
                     (int)(Position.Y + Math.Sin(MathHelper.DegreesToRadians(90 - Angle)))
                 );
-                if (Map.CellType.Empty == Map.GetCell(LooksAt)) {
+                if (Labyrinth.Map.CellType.Empty == Map.GetCell(LooksAt)) {
                     break;
                 }
             }
         }
 
         public void Move(Vector2 Vector) {
-            var PlayerAngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-Angle));
-            var TransformedVector = Vector3.TransformVector(new Vector3(Vector), PlayerAngleMatrix);
+            var AngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-Angle));
+            var TransformedVector = Vector3.TransformVector(new Vector3(Vector), AngleMatrix);
 
             // TODO don’t allow to look through walls
 
