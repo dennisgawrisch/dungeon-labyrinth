@@ -13,7 +13,7 @@ namespace Labyrinth {
             this.Map = Map;
 
             Position = Map.StartPosition;
-            
+
             Position.X += 0.5f;
             Position.Y += 0.5f;
 
