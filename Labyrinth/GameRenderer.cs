@@ -118,6 +118,11 @@ namespace Labyrinth {
             GL.Enable(EnableCap.Fog);
             GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != Camera) ? 0.5f : 0.1f);
 
+            GL.Enable(EnableCap.Texture2D);
+
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+
             IconsBuffer.Clear();
 
             RenderMap();
@@ -152,7 +157,6 @@ namespace Labyrinth {
         private void RenderMap() {
             GL.PushAttrib(AttribMask.TextureBit);
 
-            GL.Enable(EnableCap.Texture2D);
             TextureWall.Bind();
 
             GL.Begin(BeginMode.Quads);
@@ -263,12 +267,8 @@ namespace Labyrinth {
 
             var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 10f) / 2 - 1) + IconMaxSize;
 
-            GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.Fog);
-            GL.Enable(EnableCap.Blend);
-
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             IconsBuffer.Sort(CompareBufferedIcons);
             IconsBuffer.Reverse();
@@ -326,12 +326,8 @@ namespace Labyrinth {
 
             GL.PushAttrib(AttribMask.AllAttribBits);
 
-            GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.Fog);
-            GL.Enable(EnableCap.Blend);
-
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             if (CameraMode.FirstPerson == Camera) {
                 TextureGhostSide.Bind();
@@ -369,8 +365,6 @@ namespace Labyrinth {
 
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             GL.Translate(Game.Player.Position.X, Game.Player.Position.Y, WallsHeight / 2);
             GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
@@ -401,8 +395,6 @@ namespace Labyrinth {
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             var Projection = Matrix4.CreateOrthographic(-(float)Window.Width, -(float)Window.Height, -1, 1);
             GL.MatrixMode(MatrixMode.Projection);
