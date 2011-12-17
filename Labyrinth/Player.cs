@@ -38,7 +38,7 @@ namespace Labyrinth {
 
             Vector2[] Deltas = { new Vector2(TransformedVector.X, 0), new Vector2(0, TransformedVector.Y) };
 
-            var DistanceFromWalls = Math.Max(Size.X / 2, Size.Y / 2) + 0.1337f;
+            var DistanceFromWalls = Math.Max(Size.X / 2, Size.Y / 2) + 0.1f;
 
             foreach (var Delta in Deltas) {
                 var NewPosition = Position + Delta;
