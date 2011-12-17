@@ -24,7 +24,7 @@ namespace Labyrinth {
         private const float WallsHeightVariation = 0.1f;
         private const float WallsXyVariation = 0.1f;
         private const float IconMinSize = 0.35f, IconMaxSize = 0.40f;
-        private const float VisibilityDistance = 6f;
+        private const float VisibilityDistance = 7f;
         private const float GhostSize = 0.7f;
 
         private Texture TextureWall, TextureExit, TextureKey, TextureMark, TextureGhostSide, TextureGhostTop;
@@ -110,7 +110,7 @@ namespace Labyrinth {
         public override void Render() {
             GL.Enable(EnableCap.DepthTest);
 
-            var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, VisibilityDistance);
+            var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, VisibilityDistance * 2);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref Projection);
 
