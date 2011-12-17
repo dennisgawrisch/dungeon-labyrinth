@@ -58,7 +58,7 @@ namespace Labyrinth {
         }
 
         private float TorchLight = 0;
-        private float TorchLightChangeDirection = +1;
+        private float TorchLightChangeDirection = -1;
 
         private int? FadeOutStarted = null;
         private const int FadeOutLength = 42;
@@ -84,6 +84,24 @@ namespace Labyrinth {
         public override void Tick() {
             ++TicksCounter;
 
+            TorchLight = Game.TorchLight;
+            if (Game.StateEnum.Playing == Game.State) {
+                var TorchLightMin = 0.75f * TorchLight;
+                var TorchLightMax = 1.25f * TorchLight;
+
+                var TorchLightChangeMin = 0.05f * TorchLight;
+                var TorchLightChangeMax = 0.10f * TorchLight;
+                var TorchLightChange = (float)Rand.NextDouble() * (TorchLightChangeMax - TorchLightChangeMin) + TorchLightChangeMin;
+
+                TorchLight = TorchLight + TorchLightChange * TorchLightChangeDirection;
+                TorchLight = Math.Max(TorchLight, 0);
+                TorchLight = Math.Min(TorchLight, 100);
+
+                if (Rand.Next(100) < 10) {
+                    TorchLightChangeDirection = -TorchLightChangeDirection;
+                }
+            }
+
             if (Rand.Next(100) < 5) {
                 GhostFrame = Rand.Next(GhostFramesCount);
             }
@@ -92,7 +110,7 @@ namespace Labyrinth {
         public override void Render() {
             GL.Enable(EnableCap.DepthTest);
 
-            var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, Math.Max(Game.Map.Width, Game.Map.Height));
+            var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, VisibilityDistance);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref Projection);
 
@@ -100,43 +118,35 @@ namespace Labyrinth {
             GL.MatrixMode(MatrixMode.Modelview);
             GL.LoadMatrix(ref Modelview);
 
-            if (CameraMode.ThirdPerson == Camera) {
-                GL.Rotate(90, Vector3.UnitX); // look down
-            }
-
             var PlayerPosition3d = new Vector3(Game.Player.Position.X, Game.Player.Position.Y, 0);
             var VariousedPosition = VariousedPoint(PlayerPosition3d);
             PlayerPosition3d.Z = VariousedPosition.Z + Game.Player.Size.Z;
 
-            GL.Rotate(Game.Player.Angle, Vector3.UnitZ);
-            GL.Translate(Vector3.Multiply(PlayerPosition3d, -1f));
             if (CameraMode.ThirdPerson == Camera) {
-                GL.Translate(0, 0, -WallsHeight * 5);
-            }
-
-            var TorchPosition = new Vector4(Game.Player.Position);
-            TorchPosition.W = 1;
-
-            var TorchLightMin = 0.10f;
-            var TorchLightMax = 0.20f;
-            var TorchLightChangeSpeed = 0.007f;
-
-            if (Game.StateEnum.Playing == Game.State) {
-                TorchLight += Rand.Next(-100, +100) / 100f * TorchLightChangeSpeed * TorchLightChangeDirection;
-                TorchLight = Math.Max(TorchLight, TorchLightMin);
-                TorchLight = Math.Min(TorchLight, TorchLightMax);
-                if ((TorchLightMin == TorchLight) || (TorchLightMax == TorchLight) || (Rand.Next(100) < 30)) {
-                    TorchLightChangeDirection = -TorchLightChangeDirection;
-                }
+                GL.Rotate(60, Vector3.UnitX); // look down
+                GL.Translate(0, 2, 0); // stay behind
+                GL.Rotate(Game.Player.Angle, Vector3.UnitZ);
+                GL.Translate(Vector3.Multiply(PlayerPosition3d, -1f));
+                GL.Translate(0, 0, -WallsHeight * 3); // fly higher
+            } else {
+                GL.Rotate(Game.Player.Angle, Vector3.UnitZ);
+                GL.Translate(Vector3.Multiply(PlayerPosition3d, -1f));
             }
 
             GL.Enable(EnableCap.Lighting);
-            GL.Enable(EnableCap.Light0);
-            GL.Light(LightName.Light0, LightParameter.Position, TorchPosition);
-            GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, TorchLight);
-            GL.Light(LightName.Light0, LightParameter.Ambient, Color4.SaddleBrown);
-            GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
-            GL.Light(LightName.Light0, LightParameter.Specular, Color4.SaddleBrown);
+            if (TorchLight > 0) {
+                var TorchPosition = new Vector4(Game.Player.Position);
+                TorchPosition.W = 1;
+
+                GL.Enable(EnableCap.Light0);
+                GL.Light(LightName.Light0, LightParameter.Position, TorchPosition);
+                GL.Light(LightName.Light0, LightParameter.ConstantAttenuation, 1 / (0.18f * TorchLight + 1.82f));
+                GL.Light(LightName.Light0, LightParameter.Ambient, Color4.SaddleBrown);
+                GL.Light(LightName.Light0, LightParameter.Diffuse, Color4.SaddleBrown);
+                GL.Light(LightName.Light0, LightParameter.Specular, Color4.SaddleBrown);
+            } else {
+                GL.Disable(EnableCap.Light0);
+            }
 
             GL.Enable(EnableCap.Fog);
             GL.Fog(FogParameter.FogDensity, (CameraMode.ThirdPerson != Camera) ? 0.5f : 0.1f);
@@ -401,7 +411,11 @@ namespace Labyrinth {
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
 
-            GL.Translate(Game.Player.Position.X, Game.Player.Position.Y, WallsHeight);
+            var PlayerPosition3d = new Vector3(Game.Player.Position.X, Game.Player.Position.Y, 0);
+            var VariousedPosition = VariousedPoint(PlayerPosition3d);
+            PlayerPosition3d.Z = VariousedPosition.Z + Game.Player.Size.Z;
+
+            GL.Translate(PlayerPosition3d);
             GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
 
             GL.Color4(1.0f, 0, 0, 0.7f);
