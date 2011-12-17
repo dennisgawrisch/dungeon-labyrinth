@@ -20,41 +20,41 @@ namespace Labyrinth {
 
             Cells = new CellType[Width, Height];
 
-			var MaxMovementTries = 15;
-			var DirectionChangePossibility = 50;
+            var MaxMovementTries = 15;
+            var DirectionChangePossibility = 50;
             var LoopChancePerMille = 10;
 
             for (var X = 0; X < Width; X++) {
                 for (var Y = 0; Y < Height; Y++) {
-                        Cells[X, Y] = CellType.Wall;
+                    Cells[X, Y] = CellType.Wall;
                 }
             }
 
             StartPosition = RandomPosition();
 
-    		var Position = StartPosition;
-    		var PositionsStack = new Stack<Position>(Width * Height);
-    		PositionsStack.Push(Position);
-    		var Direction = Vector2.UnitY;
+            var Position = StartPosition;
+            var PositionsStack = new Stack<Position>(Width * Height);
+            PositionsStack.Push(Position);
+            var Direction = Vector2.UnitY;
 
-    		do {
-    			SetCell(Position, CellType.Empty);
-    
-    			var Success = false;
-    			for (var Tries = 0; !Success && (Tries < MaxMovementTries); Tries++) {
-    				var DirectionChange = Rand.Next(-200, +200);
-    				if (DirectionChange < DirectionChangePossibility - 200) {
-    					Direction = Direction.PerpendicularLeft;
-    				} else if (DirectionChange > 200 - DirectionChangePossibility) {
-    					Direction = Direction.PerpendicularRight;
-    				}
-    
-    				var Next = (Position)(Vector2.Add(Position, Direction));
-    				var LeftToNext = (Position)(Vector2.Add(Next, Direction.PerpendicularLeft));
-    				var RightToNext = (Position)(Vector2.Add(Next, Direction.PerpendicularRight));
-    				var NextNext = (Position)(Vector2.Add(Next, Direction));
-    				var LeftToNextNext = (Position)(Vector2.Add(NextNext, Direction.PerpendicularLeft));
-    				var RightToNextNext = (Position)(Vector2.Add(NextNext, Direction.PerpendicularRight));
+            do {
+                SetCell(Position, CellType.Empty);
+
+                var Success = false;
+                for (var Tries = 0; !Success && (Tries < MaxMovementTries); Tries++) {
+                    var DirectionChange = Rand.Next(-200, +200);
+                    if (DirectionChange < DirectionChangePossibility - 200) {
+                        Direction = Direction.PerpendicularLeft;
+                    } else if (DirectionChange > 200 - DirectionChangePossibility) {
+                        Direction = Direction.PerpendicularRight;
+                    }
+
+                    var Next = (Position)(Vector2.Add(Position, Direction));
+                    var LeftToNext = (Position)(Vector2.Add(Next, Direction.PerpendicularLeft));
+                    var RightToNext = (Position)(Vector2.Add(Next, Direction.PerpendicularRight));
+                    var NextNext = (Position)(Vector2.Add(Next, Direction));
+                    var LeftToNextNext = (Position)(Vector2.Add(NextNext, Direction.PerpendicularLeft));
+                    var RightToNextNext = (Position)(Vector2.Add(NextNext, Direction.PerpendicularRight));
 
                     var WithMapBounds = (
                         (0 <= Next.X) && (Next.X < Width)
@@ -71,22 +71,22 @@ namespace Labyrinth {
                         && (CellType.Wall == GetCell(RightToNextNext))
                     );
 
-    				if (
-    					WithMapBounds
+                    if (
+                        WithMapBounds
                         && NextIsWall
                         && ((Rand.Next(0, 1000) < LoopChancePerMille) || NextNextIsWall)
-    				) {
-    					Position = Next;
-    					Success = true;
-    				}
-    			}
-    
-    			if (Success) {
-    				PositionsStack.Push(Position);
-    			} else {
-    				Position = PositionsStack.Pop();
-    			}
-    		} while (PositionsStack.Count > 0);
+                    ) {
+                        Position = Next;
+                        Success = true;
+                    }
+                }
+
+                if (Success) {
+                    PositionsStack.Push(Position);
+                } else {
+                    Position = PositionsStack.Pop();
+                }
+            } while (PositionsStack.Count > 0);
 
             Checkpoints = new List<Position>(CheckpointsCount);
             for (var i = 0; i < CheckpointsCount; i++) {
