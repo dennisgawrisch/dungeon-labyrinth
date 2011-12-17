@@ -20,10 +20,9 @@ namespace Labyrinth {
         };
         public CameraMode Camera = CameraMode.FirstPerson;
 
-        private const float WallsHeight = 0.7f;
+        private const float WallsHeight = 1.0f;
         private const float WallsHeightVariation = 0.1f;
         private const float WallsXyVariation = 0.1f;
-        private const float PlayerModelSize = 0.3f;
         private const float IconMinSize = 0.35f, IconMaxSize = 0.40f;
         private const float VisibilityDistance = 6f;
         private const float GhostSize = 0.7f;
@@ -83,7 +82,9 @@ namespace Labyrinth {
                 GL.Rotate(90, Vector3.UnitX); // look down
             }
 
-            var PlayerPosition3d = new Vector3(Game.Player.Position.X, Game.Player.Position.Y, 0.5f); // TODO varioused point
+            var PlayerPosition3d = new Vector3(Game.Player.Position.X, Game.Player.Position.Y, 0);
+            var VariousedPosition = VariousedPoint(PlayerPosition3d);
+            PlayerPosition3d.Z = VariousedPosition.Z + Game.Player.Size.Z;
 
             GL.Rotate(Game.Player.Angle, Vector3.UnitZ);
             GL.Translate(Vector3.Multiply(PlayerPosition3d, -1f));
@@ -372,10 +373,10 @@ namespace Labyrinth {
             GL.Color4(1.0f, 0, 0, 0.7f);
 
             GL.Begin(BeginMode.Polygon);
-            GL.Vertex2(0, PlayerModelSize / 2);
-            GL.Vertex2(PlayerModelSize / 2, -PlayerModelSize / 2);
-            GL.Vertex2(0, -PlayerModelSize / 4);
-            GL.Vertex2(-PlayerModelSize / 2, -PlayerModelSize / 2);
+            GL.Vertex2(0, Game.Player.Size.Y / 2);
+            GL.Vertex2(Game.Player.Size.X / 2, -Game.Player.Size.Y / 2);
+            GL.Vertex2(0, -Game.Player.Size.Y / 4);
+            GL.Vertex2(-Game.Player.Size.X / 2, -Game.Player.Size.Y / 2);
             GL.End();
 
             GL.Rotate(Game.Player.Angle, Vector3.UnitZ);

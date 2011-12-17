@@ -8,8 +8,11 @@ namespace Labyrinth {
         public float Angle; // in degrees, 0 = Y↑, 90 = X→
         public const float MovementSpeed = 1.5f; // cell units per second
         public const float TurnSpeed = 150; // degrees per second
+        public Vector3 Size { get; protected set; }
 
         public Player(Map Map) {
+            Size = new Vector3(0.5f, 0.3f, 0.7f);
+
             this.Map = Map;
 
             Position = Map.StartPosition;
