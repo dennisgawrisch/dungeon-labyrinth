@@ -69,7 +69,7 @@ namespace Labyrinth {
                     Player.Angle += Player.TurnSpeed / TicksPerSecond;
                 }
 
-                var PlayerMovementVector = new Vector2(0, 0);
+                var PlayerMovementVector = Vector2.Zero;
                 if (Window.Keyboard[Key.Up] || Window.Keyboard[Key.W]) {
                     PlayerMovementVector.Y += Player.MovementSpeed / TicksPerSecond;
                 }
@@ -83,7 +83,9 @@ namespace Labyrinth {
                     PlayerMovementVector.X += Player.MovementSpeed / TicksPerSecond;
                 }
 
-                Player.Move(PlayerMovementVector);
+                if (Vector2.Zero != PlayerMovementVector) {
+                    Player.Move(PlayerMovementVector);
+                }
 
                 for (var i = 0; i < Map.Checkpoints.Count; i++) {
                     if (!CollectedCheckpoints.Contains(i) && ((Position)Player.Position == Map.Checkpoints[i])) {

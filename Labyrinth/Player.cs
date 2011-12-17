@@ -36,18 +36,26 @@ namespace Labyrinth {
             var AngleMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(-Angle));
             var TransformedVector = Vector3.TransformVector(new Vector3(Vector), AngleMatrix);
 
-            // TODO don’t allow to look through walls
+            Vector2[] Deltas = { new Vector2(TransformedVector.X, 0), new Vector2(0, TransformedVector.Y) };
 
-            var NewPosition = Position;
-            NewPosition.X += TransformedVector.X;
-            if (Map.CellType.Empty == Map.GetCell((Position)NewPosition)) {
-                Position = NewPosition;
-            }
+            var DistanceFromWalls = Math.Max(Size.X / 2, Size.Y / 2) + 0.1337f;
 
-            NewPosition = Position;
-            NewPosition.Y += TransformedVector.Y;
-            if (Map.CellType.Empty == Map.GetCell((Position)NewPosition)) {
-                Position = NewPosition;
+            foreach (var Delta in Deltas) {
+                var NewPosition = Position + Delta;
+
+                var CanMove = true;
+                for (var DX = -DistanceFromWalls; (DX <= DistanceFromWalls) && CanMove; DX += DistanceFromWalls) {
+                    for (var DY = -DistanceFromWalls; (DY <= DistanceFromWalls) && CanMove; DY += DistanceFromWalls) {
+                        var Point = NewPosition + new Vector2(DX, DY);
+                        if (Map.CellType.Wall == Map.GetCell((Position)Point)) {
+                            CanMove = false;
+                        }
+                    }
+                }
+
+                if (CanMove) {
+                    Position = NewPosition;
+                }
             }
         }
     }
