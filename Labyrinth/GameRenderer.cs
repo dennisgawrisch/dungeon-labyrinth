@@ -32,12 +32,30 @@ namespace Labyrinth {
         private int GhostFramesCount;
         private Text WinLabel;
 
-        private struct IconBufferRecord {
+        private delegate void RenderDelegate(object Data);
+        private struct TransparentObjectsBufferRecord {
             public Vector2 Position;
+            public object Data;
+            public RenderDelegate Render;
+
+            public TransparentObjectsBufferRecord(Vector2 Position, object Data, RenderDelegate Render) {
+                this.Position = Position;
+                this.Data = Data;
+                this.Render = Render;
+            }
+        }
+        private List<TransparentObjectsBufferRecord> TransparentObjectsBuffer = new List<TransparentObjectsBufferRecord>(10);
+        private struct IconData {
+            public Position Position;
             public Texture Texture;
             public Color4 Color;
+
+            public IconData(Position Position, Texture Texture, Color4 Color) {
+                this.Position = Position;
+                this.Texture = Texture;
+                this.Color = Color;
+            }
         }
-        private List<IconBufferRecord> IconsBuffer = new List<IconBufferRecord>(10);
 
         private float TorchLight = 0;
         private float TorchLightChangeDirection = +1;
@@ -124,31 +142,39 @@ namespace Labyrinth {
             GL.Enable(EnableCap.Blend);
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
-            IconsBuffer.Clear();
+            TransparentObjectsBuffer.Clear();
 
             RenderMap();
 
+            TransparentObjectsBuffer.Add(new TransparentObjectsBufferRecord(
+                Game.Map.FinishPosition,
+                new IconData(Game.Map.FinishPosition, TextureExit, (Game.CollectedCheckpoints.Count == Game.Map.Checkpoints.Count) ? Color4.ForestGreen : Color4.Red),
+                new RenderDelegate(RenderIcon)
+            ));
+
             for (var i = 0; i < Game.Map.Checkpoints.Count; i++) {
                 if (!Game.CollectedCheckpoints.Contains(i)) {
-                    RenderCheckpoint(Game.Map.Checkpoints[i], i);
+                    TransparentObjectsBuffer.Add(new TransparentObjectsBufferRecord(
+                        Game.Map.Checkpoints[i], 
+                        new IconData(Game.Map.Checkpoints[i], TextureKey, CheckpointsColors[i]), 
+                        new RenderDelegate(RenderIcon)
+                    ));
                 }
             }
 
-            RenderExit(Game.Map.FinishPosition);
-
             foreach (var Mark in Game.Marks) {
-                RenderMark(Mark);
+                TransparentObjectsBuffer.Add(new TransparentObjectsBufferRecord(Mark, new IconData(Mark, TextureMark, Color4.MediumOrchid), new RenderDelegate(RenderIcon)));
             }
+
+            foreach (var Ghost in Game.Ghosts) {
+                TransparentObjectsBuffer.Add(new TransparentObjectsBufferRecord(Ghost.Position, Ghost, new RenderDelegate(RenderGhost)));
+            }
+
+            RenderTransparentObjects();
 
             if (CameraMode.ThirdPerson == Camera) {
                 RenderPlayer();
             }
-
-            foreach (var Ghost in Game.Ghosts) { // TODO make buffer (and merge with icons’ buffer) for the sake of transparency
-                RenderGhost(Ghost);
-            }
-
-            RenderBufferedIcons();
 
             if (Game.StateEnum.Win == Game.State) {
                 RenderWinScreen();
@@ -249,72 +275,54 @@ namespace Labyrinth {
             }
         }
 
-        private void RenderIcon(Vector2 Position, Texture Texture, Color4 Color) {
-            var Icon = new IconBufferRecord();
-            Icon.Position = Position;
-            Icon.Texture = Texture;
-            Icon.Color = Color;
-            IconsBuffer.Add(Icon);
+        private void RenderIcon(object RecordData) {
+            var Data = (IconData)RecordData;
+
+            GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushMatrix();
+
+            GL.Disable(EnableCap.Lighting);
+            GL.Disable(EnableCap.Fog);
+
+            GL.Translate(Data.Position.X + 0.5, Data.Position.Y + 0.5, WallsHeight / 2);
+            GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
+            if (CameraMode.FirstPerson != Camera) {
+                GL.Rotate(-90, Vector3.UnitX);
+            }
+
+            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 10f) / 2 - 1) + IconMaxSize;
+
+            Data.Texture.Bind();
+            GL.Color4(Data.Color.R, Data.Color.G, Data.Color.B, 0.7f);
+
+            GL.Begin(BeginMode.Quads);
+            GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
+            GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
+            GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
+            GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
+            GL.End();
+
+            GL.PopMatrix();
+            GL.PopAttrib();
         }
 
-        private int CompareBufferedIcons(IconBufferRecord A, IconBufferRecord B) {
+        private int CompareBufferedTransparentObjects(TransparentObjectsBufferRecord A, TransparentObjectsBufferRecord B) {
             var DistanceA = (A.Position - Game.Player.Position).Length;
             var DistanceB = (B.Position - Game.Player.Position).Length;
             return DistanceA < DistanceB ? -1 : +1; // using (int)(DistanceA - DistanceB) will lead to unexpected rounding problems
         }
 
-        private void RenderBufferedIcons() {
-            GL.PushAttrib(AttribMask.AllAttribBits);
-
-            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 10f) / 2 - 1) + IconMaxSize;
-
-            GL.Disable(EnableCap.Lighting);
-            GL.Disable(EnableCap.Fog);
-
-            IconsBuffer.Sort(CompareBufferedIcons);
-            IconsBuffer.Reverse();
-
-            foreach (var Icon in IconsBuffer) {
-                Icon.Texture.Bind();
-
-                GL.PushMatrix();
-
-                GL.Translate(Icon.Position.X + 0.5, Icon.Position.Y + 0.5, WallsHeight / 2);
-
-                GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
-
-                if (CameraMode.FirstPerson != Camera) {
-                    GL.Rotate(-90, Vector3.UnitX);
-                }
-
-                GL.Color4(Icon.Color.R, Icon.Color.G, Icon.Color.B, 0.7f);
-
-                GL.Begin(BeginMode.Quads);
-                GL.TexCoord2(0, 1); GL.Vertex3(-Size / 2, 0, -Size / 2);
-                GL.TexCoord2(0, 0); GL.Vertex3(-Size / 2, 0, Size / 2);
-                GL.TexCoord2(1, 0); GL.Vertex3(Size / 2, 0, Size / 2);
-                GL.TexCoord2(1, 1); GL.Vertex3(Size / 2, 0, -Size / 2);
-                GL.End();
-
-                GL.PopMatrix();
+        private void RenderTransparentObjects() {
+            TransparentObjectsBuffer.Sort(CompareBufferedTransparentObjects);
+            TransparentObjectsBuffer.Reverse();
+            foreach (var Object in TransparentObjectsBuffer) {
+                Object.Render(Object.Data);
             }
-
-            GL.PopAttrib();
         }
 
-        private void RenderExit(Vector2 Position) {
-            RenderIcon(Position, TextureExit, (Game.CollectedCheckpoints.Count == Game.Map.Checkpoints.Count) ? Color4.ForestGreen : Color4.Red);
-        }
+        private void RenderGhost(object RecordData) {
+            var Ghost = (Ghost)RecordData;
 
-        private void RenderCheckpoint(Vector2 Position, int Index) {
-            RenderIcon(Position, TextureKey, CheckpointsColors[Index]);
-        }
-
-        private void RenderMark(Vector2 Position) {
-            RenderIcon(Position, TextureMark, Color4.MediumOrchid);
-        }
-
-        private void RenderGhost(Ghost Ghost) {
             GL.PushMatrix();
 
             GL.Translate(Ghost.Position.X + 0.5, Ghost.Position.Y + 0.5, WallsHeight / 2);
@@ -363,11 +371,12 @@ namespace Labyrinth {
 
         private void RenderPlayer() {
             GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushMatrix();
 
             GL.Disable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
 
-            GL.Translate(Game.Player.Position.X, Game.Player.Position.Y, WallsHeight / 2);
+            GL.Translate(Game.Player.Position.X, Game.Player.Position.Y, WallsHeight);
             GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
 
             GL.Color4(1.0f, 0, 0, 0.7f);
@@ -379,9 +388,7 @@ namespace Labyrinth {
             GL.Vertex2(-Game.Player.Size.X / 2, -Game.Player.Size.Y / 2);
             GL.End();
 
-            GL.Rotate(Game.Player.Angle, Vector3.UnitZ);
-            GL.Translate(-Game.Player.Position.X, -Game.Player.Position.Y, -WallsHeight / 2);
-
+            GL.PopMatrix();
             GL.PopAttrib();
         }
 
