@@ -5,6 +5,10 @@ namespace Labyrinth {
     abstract class GameWindowLayer {
         public GameWindow Window;
 
+        public GameWindowLayer(GameWindow Window) {
+            this.Window = Window;
+        }
+
         public virtual void Tick() {
         }
 

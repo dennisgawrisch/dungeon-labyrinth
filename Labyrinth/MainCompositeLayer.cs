@@ -21,10 +21,9 @@ namespace Labyrinth {
             }
         }
 
-        public MainCompositeLayer(GameWindow Window) {
-            this.Window = Window;
-            Menu = new MenuLayer(this); 
-            Menu.Window = Window;
+        public MainCompositeLayer(GameWindow Window)
+            : base(Window) {
+            Menu = new MenuLayer(this);
             MenuIsActive = true;
         }
 

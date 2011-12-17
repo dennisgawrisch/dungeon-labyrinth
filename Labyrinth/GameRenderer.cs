@@ -8,9 +8,11 @@ using OpenTK.Graphics.OpenGL;
 using Labyrinth.Gui;
 
 namespace Labyrinth {
-    class GameRenderer {
+    class GameRenderer : GameWindowLayer {
         private Game Game;
         private Random Rand = new Random();
+
+        private int TicksCounter = 0;
 
         public enum CameraMode {
             FirstPerson,
@@ -44,7 +46,8 @@ namespace Labyrinth {
         private int? FadeOutStarted = null;
         private const int FadeOutLength = 42;
 
-        public GameRenderer(Game Game) {
+        public GameRenderer(GameWindow Window, Game Game)
+            : base(Window) {
             this.Game = Game;
 
             TextureWall = new Texture(new Bitmap("textures/wall.png"));
@@ -61,7 +64,11 @@ namespace Labyrinth {
             WinLabel.Font = new Font(new FontFamily(GenericFontFamilies.SansSerif), 50, GraphicsUnit.Pixel);
         }
 
-        public void Render(GameWindow Window) {
+        public override void Tick() {
+            ++TicksCounter;
+        }
+
+        public override void Render() {
             GL.Enable(EnableCap.DepthTest);
 
             var Projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI / 4, Window.Width / (float)Window.Height, 1e-3f, Math.Max(Game.Map.Width, Game.Map.Height));
@@ -138,7 +145,7 @@ namespace Labyrinth {
             RenderBufferedIcons();
 
             if (Game.StateEnum.Win == Game.State) {
-                RenderWinScreen(Window);
+                RenderWinScreen();
             }
         }
 
@@ -254,7 +261,7 @@ namespace Labyrinth {
         private void RenderBufferedIcons() {
             GL.PushAttrib(AttribMask.AllAttribBits);
 
-            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(Game.TicksCounter / 10f) / 2 - 1) + IconMaxSize;
+            var Size = (IconMaxSize - IconMinSize) / 2 * (Math.Sin(TicksCounter / 10f) / 2 - 1) + IconMaxSize;
 
             GL.Enable(EnableCap.Texture2D);
             GL.Disable(EnableCap.Lighting);
@@ -383,11 +390,11 @@ namespace Labyrinth {
             GL.PopAttrib();
         }
 
-        private void RenderWinScreen(GameWindow Window) {
+        private void RenderWinScreen() {
             if (!FadeOutStarted.HasValue) {
-                FadeOutStarted = Game.TicksCounter;
+                FadeOutStarted = TicksCounter;
             }
-            var FadeOutCounter = Game.TicksCounter - FadeOutStarted.Value;
+            var FadeOutCounter = TicksCounter - FadeOutStarted.Value;
 
             GL.PushAttrib(AttribMask.AllAttribBits);
 
