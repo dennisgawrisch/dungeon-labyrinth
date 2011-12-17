@@ -20,6 +20,9 @@ namespace Labyrinth {
         public int MarksLeft = 10;
         public List<Position> Marks = new List<Position>();
         public Ghost[] Ghosts;
+        public float TorchLight; // 0 (darkness) … 100 (max. light)
+
+        public const float TorchLightLifeTime = 300; // seconds
 
         public enum StateEnum {
             Playing,
@@ -56,8 +59,11 @@ namespace Labyrinth {
         public override void Tick() {
             ++TicksCounter;
             var TicksPerSecond = (float)Window.TargetUpdateFrequency;
+            var SecondsPlayed = TicksCounter / TicksPerSecond;
 
             if (StateEnum.Playing == State) {
+                TorchLight = Math.Max(100 * (1 - SecondsPlayed / TorchLightLifeTime), 0);
+
                 foreach (var Ghost in Ghosts) {
                     Ghost.Move(1 / TicksPerSecond);
                 }
