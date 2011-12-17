@@ -27,11 +27,12 @@ namespace Labyrinth {
         }
         public StateEnum State;
 
-        public int TicksCounter { get; protected set; }
+        private int TicksCounter;
 
         private GameRenderer Renderer;
 
-        public Game(DifficultyLevel Difficulty) {
+        public Game(GameWindow Window, DifficultyLevel Difficulty)
+            : base(Window) {
             if (DifficultyLevel.Easy == Difficulty) {
                 Map = new Map(Rand, 10, 10, 2);
                 Ghosts = new Ghost[1];
@@ -49,7 +50,7 @@ namespace Labyrinth {
 
             Player = new Player(Map);
             State = StateEnum.Playing;
-            Renderer = new GameRenderer(this);
+            Renderer = new GameRenderer(Window, this);
         }
 
         public override void Tick() {
@@ -94,6 +95,8 @@ namespace Labyrinth {
                     State = StateEnum.Win;
                 }
             }
+
+            Renderer.Tick();
         }
 
         public override void OnKeyPress(Key K) {
@@ -101,7 +104,7 @@ namespace Labyrinth {
                 if (K.Equals(Key.C)) {
                     if (GameRenderer.CameraMode.FirstPerson == Renderer.Camera) {
                         Renderer.Camera = GameRenderer.CameraMode.ThirdPerson;
-    
+
                     } else {
                         Renderer.Camera = GameRenderer.CameraMode.FirstPerson;
                     }
@@ -115,7 +118,7 @@ namespace Labyrinth {
         }
 
         public override void Render() {
-            Renderer.Render(Window);
+            Renderer.Render();
         }
     }
 }

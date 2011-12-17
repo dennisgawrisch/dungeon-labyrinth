@@ -22,7 +22,8 @@ namespace Labyrinth {
         public Menu MainMenu;
         private Menu NewGameMenu, HelpMenu, QuitConfirmationMenu;
 
-        public MenuLayer(MainCompositeLayer Composite) {
+        public MenuLayer(MainCompositeLayer Composite)
+            : base(Composite.Window) {
             MainLayer = Composite;
             ConstructMainMenu();
             CurrentMenu = MainMenu;
@@ -66,19 +67,19 @@ namespace Labyrinth {
             var Easy = new Button("Easy");
             NewGameMenu.Add(Easy);
             Easy.Enter += (Sender, E) => {
-                MainLayer.Game = new Game(Game.DifficultyLevel.Easy);
+                MainLayer.Game = new Game(Window, Game.DifficultyLevel.Easy);
             };
 
             var Normal = new Button("Normal");
             NewGameMenu.Add(Normal);
             Normal.Enter += (Sender, E) => {
-                MainLayer.Game = new Game(Game.DifficultyLevel.Normal);
+                MainLayer.Game = new Game(Window, Game.DifficultyLevel.Normal);
             };
 
             var Hard = new Button("Hard");
             NewGameMenu.Add(Hard);
             Hard.Enter += (Sender, E) => {
-                MainLayer.Game = new Game(Game.DifficultyLevel.Hard);
+                MainLayer.Game = new Game(Window, Game.DifficultyLevel.Hard);
             };
         }
 
@@ -145,14 +146,14 @@ namespace Labyrinth {
             GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
             GL.Color4(new Color4(0, 0, 0, 100));
-            
+
             GL.Begin(BeginMode.Quads);
             GL.Vertex2(0, 0);
             GL.Vertex2(Window.Width, 0);
             GL.Vertex2(Window.Width, Window.Height);
             GL.Vertex2(0, Window.Height);
             GL.End();
-            
+
             GL.Disable(EnableCap.Blend);
 
             // Render the menu
