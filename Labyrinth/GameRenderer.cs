@@ -29,7 +29,7 @@ namespace Labyrinth {
 
         private Texture TextureWall, TextureExit, TextureKey, TextureMark, TextureGhostSide, TextureGhostTop;
         private Color4[] CheckpointsColors = { Color4.OrangeRed, Color4.Aquamarine, Color4.DodgerBlue, Color4.Yellow };
-        private int GhostFramesCount;
+        private int GhostFramesCount, GhostFrame = 0;
         private Text WinLabel;
 
         private delegate void RenderDelegate(object Data);
@@ -83,6 +83,10 @@ namespace Labyrinth {
 
         public override void Tick() {
             ++TicksCounter;
+
+            if (Rand.Next(100) < 5) {
+                GhostFrame = Rand.Next(GhostFramesCount);
+            }
         }
 
         public override void Render() {
@@ -323,49 +327,70 @@ namespace Labyrinth {
         private void RenderGhost(object RecordData) {
             var Ghost = (Ghost)RecordData;
 
-            GL.PushMatrix();
-
-            GL.Translate(Ghost.Position.X + 0.5, Ghost.Position.Y + 0.5, WallsHeight / 2);
-
-            if (CameraMode.FirstPerson == Camera) {
-                GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
-            } else {
-                GL.Rotate(-90, Vector3.UnitX);
-            }
+            var TextureWidth = 1 / (float)GhostFramesCount;
+            var TextureX = (GhostFrame - 1) * TextureWidth;
 
             GL.PushAttrib(AttribMask.AllAttribBits);
+            GL.PushMatrix();
 
             GL.Disable(EnableCap.Lighting);
             GL.Disable(EnableCap.Fog);
 
-            if (CameraMode.FirstPerson == Camera) {
-                TextureGhostSide.Bind();
-            } else {
-                TextureGhostTop.Bind();
-            }
-
-            var AnimationFrame = Rand.Next(GhostFramesCount);
+            GL.Translate(Ghost.Position.X + 0.5, Ghost.Position.Y + 0.5, WallsHeight / 2);
 
             GL.Color4(new Color4(1f, 1f, 1f, 1f));
 
-            GL.Begin(BeginMode.Quads);
+            if (CameraMode.FirstPerson == Camera) {
+                GL.Rotate(-Game.Player.Angle, Vector3.UnitZ);
 
-            GL.TexCoord2((AnimationFrame - 1) / (float)GhostFramesCount, 1);
-            GL.Vertex3(-GhostSize / 2, 0, -GhostSize / 2);
+                TextureGhostSide.Bind();
 
-            GL.TexCoord2((AnimationFrame - 1) / (float)GhostFramesCount, 0);
-            GL.Vertex3(-GhostSize / 2, 0, GhostSize / 2);
+                GL.Begin(BeginMode.QuadStrip);
 
-            GL.TexCoord2(AnimationFrame / (float)GhostFramesCount, 0);
-            GL.Vertex3(GhostSize / 2, 0, GhostSize / 2);
+                GL.TexCoord2(TextureX, 0);
+                GL.Vertex3(-GhostSize / 2, +GhostSize / 2, +GhostSize / 2);
+                GL.TexCoord2(TextureX, 1);
+                GL.Vertex3(-GhostSize / 2, +GhostSize / 2, -GhostSize / 2);
 
-            GL.TexCoord2(AnimationFrame / (float)GhostFramesCount, 1);
-            GL.Vertex3(GhostSize / 2, 0, -GhostSize / 2);
+                GL.TexCoord2(TextureX + TextureWidth * 0.25, 0);
+                GL.Vertex3(-GhostSize / 4, 0, +GhostSize / 2);
+                GL.TexCoord2(TextureX + TextureWidth * 0.25, 1);
+                GL.Vertex3(-GhostSize / 4, 0, -GhostSize / 2);
 
-            GL.End();
+                GL.TexCoord2(TextureX + TextureWidth * 0.75, 0);
+                GL.Vertex3(+GhostSize / 4, 0, +GhostSize / 2);
+                GL.TexCoord2(TextureX + TextureWidth * 0.75, 1);
+                GL.Vertex3(+GhostSize / 4, 0, -GhostSize / 2);
+
+                GL.TexCoord2(TextureX + TextureWidth, 0);
+                GL.Vertex3(+GhostSize / 2, +GhostSize / 2, +GhostSize / 2);
+                GL.TexCoord2(TextureX + TextureWidth, 1);
+                GL.Vertex3(+GhostSize / 2, +GhostSize / 2, -GhostSize / 2);
+
+                GL.End();
+            } else {
+                GL.Rotate(-90, Vector3.UnitX);
+
+                TextureGhostTop.Bind();
+
+                GL.Begin(BeginMode.Quads);
+
+                GL.TexCoord2(TextureX, 1);
+                GL.Vertex3(-GhostSize / 2, 0, -GhostSize / 2);
+
+                GL.TexCoord2(TextureX, 0);
+                GL.Vertex3(-GhostSize / 2, 0, GhostSize / 2);
+
+                GL.TexCoord2(TextureX + TextureWidth, 0);
+                GL.Vertex3(GhostSize / 2, 0, GhostSize / 2);
+
+                GL.TexCoord2(TextureX + TextureWidth, 1);
+                GL.Vertex3(GhostSize / 2, 0, -GhostSize / 2);
+
+                GL.End();
+            }
 
             GL.PopAttrib();
-
             GL.PopMatrix();
         }
 
