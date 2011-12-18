@@ -86,9 +86,6 @@ namespace Labyrinth {
 
             TorchLight = Game.TorchLight;
             if (Game.StateEnum.Playing == Game.State) {
-                var TorchLightMin = 0.75f * TorchLight;
-                var TorchLightMax = 1.25f * TorchLight;
-
                 var TorchLightChangeMin = 0.05f * TorchLight;
                 var TorchLightChangeMax = 0.10f * TorchLight;
                 var TorchLightChange = (float)Rand.NextDouble() * (TorchLightChangeMax - TorchLightChangeMin) + TorchLightChangeMin;
